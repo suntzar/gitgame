@@ -17,7 +17,7 @@
     {
       "id": 3,
       "context": "Cálculo simples: some dois números.",
-      "command": "Crie uma função que some 2 e 3 e retorne o resultado. Imprima-o.",
+      "command": "Crie uma função que some 2 e 3 e imprima o resultado.",
       "expectedType": "number",
       "expectedValue": 5
     },
@@ -52,7 +52,7 @@
     {
       "id": 8,
       "context": "Listagem: gere uma sequência de números.",
-      "command": "Crie uma função que retorne os números de 1 a 5 em linhas separadas (use '\\n' para separar) e imprima o resultado.",
+      "command": "Crie uma função que retorne os números de 1 a 5 separados por '\\n' e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "1\n2\n3\n4\n5"
     },
@@ -72,15 +72,15 @@
     },
     {
       "id": 11,
-      "context": "Concatenação: una duas strings.",
-      "command": "Crie uma função que retorne a concatenação de 'Foo' e 'Bar' (com espaço entre) e imprima o resultado.",
+      "context": "Concatenação: una duas strings com espaço.",
+      "command": "Crie uma função que retorne a concatenação de 'Foo' e 'Bar' com um espaço e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "Foo Bar"
     },
     {
       "id": 12,
       "context": "Conversão de tipo: converta uma string em inteiro.",
-      "command": "Crie uma função que converta a string '123' para inteiro e imprima o resultado.",
+      "command": "Crie uma função que converta '123' para inteiro e imprima o resultado.",
       "expectedType": "number",
       "expectedValue": 123
     },
@@ -108,14 +108,14 @@
     {
       "id": 16,
       "context": "Manipulação de string: converta para maiúsculas.",
-      "command": "Crie uma função que converta a string 'Python' para letras maiúsculas e imprima o resultado.",
+      "command": "Crie uma função que converta 'Python' para letras maiúsculas e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "PYTHON"
     },
     {
       "id": 17,
       "context": "Manipulação de string: capitalização.",
-      "command": "Crie uma função que converta a string 'python' para capitalizada (apenas a primeira letra em maiúsculo) e imprima o resultado.",
+      "command": "Crie uma função que converta 'python' para capitalizada e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "Python"
     },
@@ -143,21 +143,21 @@
     {
       "id": 21,
       "context": "Módulo: calcule o resto da divisão.",
-      "command": "Crie uma função que retorne o resto da divisão de 17 por 3 e imprima o resultado.",
+      "command": "Crie uma função que retorne o resto de 17 por 3 e imprima o resultado.",
       "expectedType": "number",
       "expectedValue": 2
     },
     {
       "id": 22,
-      "context": "Concatenação: junte strings com espaço.",
-      "command": "Crie uma função que una 'Hello' e 'World' com um espaço no meio e imprima o resultado.",
+      "context": "Concatenação: junte duas strings com espaço.",
+      "command": "Crie uma função que retorne a união de 'Hello' e 'World' com um espaço e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "Hello World"
     },
     {
       "id": 23,
       "context": "Lista: retorne uma lista de números.",
-      "command": "Crie uma função que retorne uma lista com os números 1, 2 e 3 e imprima o resultado formatado como '1,2,3'.",
+      "command": "Crie uma função que retorne os números 1, 2 e 3 formatados como '1,2,3' e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "1,2,3"
     },
@@ -192,14 +192,14 @@
     {
       "id": 28,
       "context": "Filtragem: retorne os números pares.",
-      "command": "Crie uma função que retorne os números pares de 1 a 10, separados por '\\n', e imprima o resultado.",
+      "command": "Crie uma função que retorne os números pares de 1 a 10 separados por '\\n' e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "2\n4\n6\n8\n10"
     },
     {
       "id": 29,
       "context": "Filtragem: retorne os números ímpares.",
-      "command": "Crie uma função que retorne os números ímpares de 1 a 10, separados por '\\n', e imprima o resultado.",
+      "command": "Crie uma função que retorne os números ímpares de 1 a 10 separados por '\\n' e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "1\n3\n5\n7\n9"
     },
@@ -213,14 +213,14 @@
     {
       "id": 31,
       "context": "Mapeamento: retorne o quadrado de cada número.",
-      "command": "Crie uma função que retorne os quadrados dos números de 1 a 5, separados por '\\n', e imprima o resultado.",
+      "command": "Crie uma função que retorne os quadrados dos números de 1 a 5 separados por '\\n' e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "1\n4\n9\n16\n25"
     },
     {
       "id": 32,
       "context": "Sequência: gere a sequência Fibonacci até 21.",
-      "command": "Crie uma função que retorne a sequência Fibonacci (valores separados por '\\n') até o número 21 e imprima o resultado.",
+      "command": "Crie uma função que retorne a sequência Fibonacci (valores separados por '\\n') até 21 e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "0\n1\n1\n2\n3\n5\n8\n13\n21"
     },
@@ -255,14 +255,14 @@
     {
       "id": 37,
       "context": "Repetição de string: multiplique uma palavra.",
-      "command": "Crie uma função que retorne a string 'Python' repetida 3 vezes (sem espaços) e imprima o resultado.",
+      "command": "Crie uma função que retorne 'Python' repetida 3 vezes (sem espaços) e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "PythonPythonPython"
     },
     {
       "id": 38,
       "context": "Formatação: insira hífens entre caracteres.",
-      "command": "Crie uma função que, dada a string 'ABCDE', retorne os caracteres separados por hífen (ex: 'A-B-C-D-E') e imprima o resultado.",
+      "command": "Crie uma função que, dada a string 'ABCDE', retorne os caracteres separados por hífen e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "A-B-C-D-E"
     },
@@ -311,7 +311,7 @@
     {
       "id": 45,
       "context": "Soma de dígitos: some os dígitos de um número.",
-      "command": "Crie uma função que retorne a soma dos dígitos do número 1234 (1+2+3+4) e imprima o resultado.",
+      "command": "Crie uma função que retorne a soma dos dígitos do número 1234 e imprima o resultado.",
       "expectedType": "number",
       "expectedValue": 10
     },
@@ -325,7 +325,7 @@
     {
       "id": 47,
       "context": "Manipulação de string: converta para minúsculas.",
-      "command": "Crie uma função que retorne a string 'Git Game' em minúsculas e imprima o resultado.",
+      "command": "Crie uma função que retorne 'Git Game' em minúsculas e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "git game"
     },
@@ -367,14 +367,14 @@
     {
       "id": 53,
       "context": "Média aritmética: calcule a média de três números.",
-      "command": "Crie uma função que retorne a média aritmética de 3, 6 e 9 e imprima o resultado.",
+      "command": "Crie uma função que retorne a média de 3, 6 e 9 e imprima o resultado.",
       "expectedType": "number",
       "expectedValue": 6
     },
     {
       "id": 54,
       "context": "Concatenação avançada: junte duas palavras com separador customizado.",
-      "command": "Crie uma função que retorne a concatenação das strings 'Open' e 'Source' separadas por um espaço e imprima o resultado.",
+      "command": "Crie uma função que retorne a concatenação de 'Open' e 'Source' separadas por um espaço e imprima o resultado.",
       "expectedType": "string",
       "expectedValue": "Open Source"
     },

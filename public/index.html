@@ -98,7 +98,7 @@
       document.getElementById("levelExpected").innerHTML = "<strong>Saída esperada (" + state.currentLevel.expectedType + "):</strong> " + state.currentLevel.expectedValue;
     }
     
-    // Recebe o estado completo (código, nível, tempo) do servidor
+    // Recebe o estado completo do servidor
     socket.on('stateUpdate', (state) => {
       editor.setValue(state.currentCode);
       updateLevelInfo(state);
@@ -121,7 +121,7 @@
       document.getElementById("timer").innerText = "Tempo: " + Math.floor(elapsed / 1000) + "s";
     });
     
-    // Reinicia a exibição do timer
+    // Reinicia o timer
     socket.on('timerReset', () => {
       document.getElementById("timer").innerText = "Tempo: 0s";
     });

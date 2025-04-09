@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Carrega os níveis a partir do arquivo JSON (levels.json)
+// Carrega os níveis a partir do arquivo JSON
 let levels;
 try {
   levels = JSON.parse(fs.readFileSync('levels.json', 'utf8')).levels;
@@ -24,16 +24,16 @@ try {
 // Estado global do jogo
 let currentLevelIndex = 0;
 let currentLevel = levels[currentLevelIndex];
-let currentCode = ""; // código compartilhado entre os jogadores
+let currentCode = ""; // código colaborativo compartilhado
 let levelStartTime = Date.now();
 
-// A cada segundo, envia aos clientes o tempo decorrido
+// Envia a cada segundo o tempo decorrido para os clientes
 setInterval(() => {
   const elapsed = Date.now() - levelStartTime;
   io.emit('timerUpdate', elapsed);
 }, 1000);
 
-// Função para comparar o output produzido com o esperado
+// Função para verificar a saída produzida versus o esperado (tipo e valor)
 function verifyOutput(output, expectedType, expectedValue) {
   if (expectedType === "number") {
     const num = Number(output);
@@ -53,24 +53,24 @@ function verifyOutput(output, expectedType, expectedValue) {
   }
 }
 
-// Socket.io: gerencia a colaboração em tempo real e as ações do jogo
+// Socket.io: gerencia a colaboração e as ações do jogo
 io.on('connection', socket => {
   console.log("Cliente conectado:", socket.id);
   
-  // Envia o estado atual (código, nível e tempo) para o novo cliente
+  // Envia o estado atual para o novo cliente
   socket.emit('stateUpdate', {
     currentCode,
     currentLevel,
     elapsedTime: Date.now() - levelStartTime
   });
   
-  // Atualização colaborativa do código
+  // Atualiza o código colaborativamente
   socket.on('codeUpdate', newCode => {
     currentCode = newCode;
     socket.broadcast.emit('codeUpdate', currentCode);
   });
   
-  // Reset: reinicia o código e o cronômetro do nível atual
+  // Reset do jogo (código e cronômetro)
   socket.on('resetGame', () => {
     currentCode = "";
     levelStartTime = Date.now();
@@ -78,9 +78,8 @@ io.on('connection', socket => {
     io.emit('timerReset');
   });
   
-  // Submissão do código: executa o código e verifica se o output bate com o esperado
+  // Submete o código: o servidor executa o código em Python e verifica o resultado
   socket.on('submitCode', () => {
-    // Cria um arquivo temporário com o código atual
     const tempFile = `temp_${uuidv4()}.py`;
     fs.writeFileSync(tempFile, currentCode);
     let cmd = `python3 ${tempFile}`;
@@ -93,7 +92,7 @@ io.on('connection', socket => {
         if (verifyOutput(output, currentLevel.expectedType, currentLevel.expectedValue)) {
           const timeTaken = Date.now() - levelStartTime;
           io.emit('submissionResult', { success: true, message: `Nível ${currentLevel.id} completado em ${(timeTaken/1000).toFixed(1)} segundos!` });
-          // Passa para o próximo nível (se houver)
+          // Avança para o próximo nível (se houver)
           if (currentLevelIndex < levels.length - 1) {
             currentLevelIndex++;
             currentLevel = levels[currentLevelIndex];
@@ -119,11 +118,7 @@ io.on('connection', socket => {
   });
 });
 
-// Endpoint opcional (não utilizado nesta versão do jogo)
-app.post('/compile', (req, res) => {
-  res.status(501).json({ message: "Not implemented in this game version." });
-});
-
+// Render utilizará a variável PORT definida pelo ambiente
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
