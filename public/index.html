@@ -40,7 +40,7 @@
       font-size: 16px;
     }
     button:hover { background-color: #7081b6; }
-    #timer {
+    #timer, #turnStatus {
       text-align: center;
       font-size: 20px;
       margin-bottom: 10px;
@@ -63,12 +63,14 @@
     <p id="levelExpected"><strong>Saída esperada:</strong> </p>
   </div>
   
-  <div id="timer">Tempo: 0s</div>
+  <div id="timer">Tempo do nível: 0s</div>
+  <div id="turnStatus">Aguardando turno...</div>
   
   <textarea id="code" class="editor"></textarea>
   
   <div class="btn-container">
     <button onclick="resetGame()">Reset</button>
+    <button id="passTurnBtn" onclick="passTurn()" disabled>Pass Turn</button>
     <button onclick="submitCode()">Submit</button>
   </div>
   
@@ -85,28 +87,41 @@
       theme: "dracula",
       lineNumbers: true,
       indentUnit: 4,
-      autofocus: true
+      autofocus: true,
+      readOnly: "nocursor" // inicialmente, desabilitado até definir turno
     });
     
     const socket = io();
+    let myID = null;
+    let currentTurnID = null;
     
-    // Atualiza as informações do nível na interface
+    // Recebe seu ID do servidor
+    socket.on('yourID', id => {
+      myID = id;
+    });
+    
+    // Atualiza o estado do nível
     function updateLevelInfo(state) {
       document.getElementById("levelTitle").innerText = "Nível " + state.currentLevel.id;
       document.getElementById("levelContext").innerText = state.currentLevel.context;
       document.getElementById("levelCommand").innerHTML = "<strong>Comando:</strong> " + state.currentLevel.command;
-      document.getElementById("levelExpected").innerHTML = "<strong>Saída esperada (" + state.currentLevel.expectedType + "):</strong> " + state.currentLevel.expectedValue;
+      if (state.currentLevel.inputs) {
+        // Se o nível usa inputs, opcionalmente você pode exibir o input escolhido
+        document.getElementById("levelExpected").innerHTML = "<strong>Input:</strong> " + state.currentLevel.chosenInput.join(", ") + " | <strong>Saída esperada (" + state.currentLevel.expectedType + "):</strong> " + state.currentLevel.chosenExpectedOutput;
+      } else {
+        document.getElementById("levelExpected").innerHTML = "<strong>Saída esperada (" + state.currentLevel.expectedType + "):</strong> " + state.currentLevel.expectedValue;
+      }
     }
     
     // Recebe o estado completo do servidor
     socket.on('stateUpdate', (state) => {
       editor.setValue(state.currentCode);
       updateLevelInfo(state);
-      document.getElementById("timer").innerText = "Tempo: " + Math.floor(state.elapsedTime / 1000) + "s";
+      document.getElementById("timer").innerText = "Tempo do nível: " + Math.floor(state.elapsedTime / 1000) + "s";
       document.getElementById("output").innerText = "";
     });
     
-    // Atualiza o código em tempo real (colaboração)
+    // Atualiza o código colaborativo
     socket.on('codeUpdate', (newCode) => {
       const current = editor.getValue();
       if (current !== newCode) {
@@ -116,14 +131,28 @@
       }
     });
     
-    // Atualiza o timer conforme enviado pelo servidor
+    // Atualiza o timer do nível
     socket.on('timerUpdate', (elapsed) => {
-      document.getElementById("timer").innerText = "Tempo: " + Math.floor(elapsed / 1000) + "s";
+      document.getElementById("timer").innerText = "Tempo do nível: " + Math.floor(elapsed / 1000) + "s";
     });
     
     // Reinicia o timer
     socket.on('timerReset', () => {
-      document.getElementById("timer").innerText = "Tempo: 0s";
+      document.getElementById("timer").innerText = "Tempo do nível: 0s";
+    });
+    
+    // Atualiza de quem é a vez de editar
+    socket.on('turnUpdate', (turnID) => {
+      currentTurnID = turnID;
+      if (myID === turnID) {
+        document.getElementById("turnStatus").innerText = "Sua vez!";
+        editor.setOption("readOnly", false);
+        document.getElementById("passTurnBtn").disabled = false;
+      } else {
+        document.getElementById("turnStatus").innerText = "Vez do jogador: " + turnID;
+        editor.setOption("readOnly", "nocursor");
+        document.getElementById("passTurnBtn").disabled = true;
+      }
     });
     
     // Função debounce para reduzir a frequência de envio de atualizações
@@ -135,15 +164,24 @@
       };
     }
     
-    // Envia as atualizações do editor para o servidor
+    // Envia as atualizações do editor (se for sua vez)
     editor.on("change", debounce(() => {
-      socket.emit('codeUpdate', editor.getValue());
+      if (myID === currentTurnID) {
+        socket.emit('codeUpdate', editor.getValue());
+      }
     }, 300));
     
     // Reseta o código e o cronômetro
     function resetGame() {
       if (confirm("Deseja resetar o código e o tempo?")) {
         socket.emit('resetGame');
+      }
+    }
+    
+    // Passa a vez (somente se for sua vez)
+    function passTurn() {
+      if (confirm("Deseja passar sua vez?")) {
+        socket.emit('passTurn');
       }
     }
     
