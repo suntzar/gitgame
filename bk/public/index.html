@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Git Game Collaborative</title>
+  <!-- CodeMirror CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/dracula.min.css">
+  <style>
+    body {
+      background-color: #282a36;
+      color: #f8f8f2;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 10px;
+    }
+    h1, h2 { text-align: center; }
+    .editor { border: 1px solid #44475a; height: 300px; }
+    @media (max-width:600px) { .editor { height: 200px; } }
+    .btn-container {
+      text-align: center;
+      margin-top: 10px;
+    }
+    button {
+      background-color: #6272a4;
+      color: #f8f8f2;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover { background-color: #7081b6; }
+    pre#output {
+      background-color: #44475a;
+      padding: 10px;
+      overflow-x: auto;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+    #commits {
+      margin-top: 20px;
+      background: #44475a;
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    #commits div {
+      border-bottom: 1px solid #6272a4;
+      padding: 5px;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Git Game Collaborative</h1>
+  <textarea id="code" class="editor"></textarea>
+  
+  <div class="btn-container">
+    <button onclick="commitCode()">Commit</button>
+    <button onclick="mergeCommit()">Merge (commit selecionado)</button>
+    <button onclick="deleteSelection()">Delete Selected</button>
+    <button onclick="runCode()">Run Code</button>
+  </div>
+  
+  <pre id="output"></pre>
+  
+  <h2>Histórico de Commits</h2>
+  <div id="commits"></div>
+  
+  <!-- CodeMirror e Socket.io -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  
+  <script>
+    // Inicializa o editor CodeMirror
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+      mode: "python",
+      theme: "dracula",
+      lineNumbers: true,
+      indentUnit: 4,
+      autofocus: true
+    });
+    
+    const socket = io();
+    
+    // Função debounce para reduzir a frequência de envios
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+    
+    // Envia a atualização de código ao servidor quando houver mudança local
+    editor.on("change", debounce(() => {
+      const code = editor.getValue();
+      socket.emit('codeUpdate', code);
+    }, 300));
+    
+    // Atualiza o editor com código recebido do servidor (mantendo o cursor)
+    socket.on('codeUpdate', newCode => {
+      const current = editor.getValue();
+      if (current !== newCode) {
+        const cursor = editor.getCursor();
+        editor.setValue(newCode);
+        editor.setCursor(cursor);
+      }
+    });
+    
+    // Atualiza o estado (código e commits) ao receber o estado completo
+    socket.on('stateUpdate', state => {
+      const commitsDiv = document.getElementById("commits");
+      commitsDiv.innerHTML = "";
+      state.commits.forEach(commit => {
+        const commitDiv = document.createElement("div");
+        commitDiv.innerHTML = `<strong>${commit.action.toUpperCase()}</strong> - ID: ${commit.id} - ${commit.player} - ${new Date(commit.timestamp).toLocaleTimeString()}<br>
+          <pre>${commit.code}</pre>`;
+        // Clique para carregar o commit no editor
+        commitDiv.onclick = () => {
+          if (confirm("Carregar este commit?")) {
+            socket.emit('loadCommit', commit.id);
+          }
+        };
+        commitsDiv.appendChild(commitDiv);
+      });
+    });
+    
+    // Função para executar o código via endpoint /compile
+    async function runCode() {
+      const code = editor.getValue();
+      const data = { language: 'python3', code: code, input: '' };
+      try {
+        const response = await fetch('/compile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        document.getElementById("output").innerText = result.output || result.cmpError || "Sem saída";
+      } catch(e) {
+        document.getElementById("output").innerText = "Erro ao compilar/executar código.";
+      }
+    }
+    
+    // Realiza um commit do estado atual
+    function commitCode() {
+      const player = prompt("Digite o nome do jogador:");
+      socket.emit('commit', { player: player || "unknown" });
+      alert("Commit enviado!");
+    }
+    
+    // Realiza um merge com um commit selecionado (solicita o ID do commit)
+    function mergeCommit() {
+      const commitId = prompt("Digite o ID do commit para merge:");
+      if (commitId) {
+        socket.emit('merge', parseInt(commitId));
+        alert("Merge enviado!");
+      }
+    }
+    
+    // Deleta o texto selecionado no editor
+    function deleteSelection() {
+      const doc = editor.getDoc();
+      const selection = doc.getSelection();
+      if (selection) {
+        doc.replaceSelection("");
+      } else {
+        alert("Nenhum texto selecionado.");
+      }
+    }
+  </script>
+</body>
+</html>

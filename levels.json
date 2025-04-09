@@ -1,0 +1,389 @@
+{
+  "levels": [
+    {
+      "id": 1,
+      "context": "Bem-vindo ao Git Game! Seu primeiro desafio é simples.",
+      "command": "Crie uma função que retorne a string 'Hello, World!' e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "Hello, World!"
+    },
+    {
+      "id": 2,
+      "context": "Desafio de identidade: crie uma função que retorne seu nome.",
+      "command": "Crie uma função que retorne 'Alice' e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "Alice"
+    },
+    {
+      "id": 3,
+      "context": "Cálculo simples: some dois números.",
+      "command": "Crie uma função que some 2 e 3 e retorne o resultado. Imprima-o.",
+      "expectedType": "number",
+      "expectedValue": 5
+    },
+    {
+      "id": 4,
+      "context": "Operação básica: subtraia dois números.",
+      "command": "Crie uma função que retorne a diferença entre 10 e 4 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 6
+    },
+    {
+      "id": 5,
+      "context": "Multiplicação: produto de dois números.",
+      "command": "Crie uma função que retorne o produto de 3 e 7 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 21
+    },
+    {
+      "id": 6,
+      "context": "Divisão: calcule a divisão.",
+      "command": "Crie uma função que retorne a divisão de 20 por 4 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 5
+    },
+    {
+      "id": 7,
+      "context": "Potência: eleve um número a uma potência.",
+      "command": "Crie uma função que retorne 2 elevado a 3 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 8
+    },
+    {
+      "id": 8,
+      "context": "Listagem: gere uma sequência de números.",
+      "command": "Crie uma função que retorne os números de 1 a 5 em linhas separadas (use '\\n' para separar) e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "1\n2\n3\n4\n5"
+    },
+    {
+      "id": 9,
+      "context": "Manipulação de string: inverta uma palavra.",
+      "command": "Crie uma função que retorne a palavra 'Python' invertida e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "nohtyP"
+    },
+    {
+      "id": 10,
+      "context": "Comprimento de string: meça o tamanho de uma palavra.",
+      "command": "Crie uma função que retorne o comprimento da palavra 'Desenvolvimento' e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 15
+    },
+    {
+      "id": 11,
+      "context": "Concatenação: una duas strings.",
+      "command": "Crie uma função que retorne a concatenação de 'Foo' e 'Bar' (com espaço entre) e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "Foo Bar"
+    },
+    {
+      "id": 12,
+      "context": "Conversão de tipo: converta uma string em inteiro.",
+      "command": "Crie uma função que converta a string '123' para inteiro e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 123
+    },
+    {
+      "id": 13,
+      "context": "Soma de vários números.",
+      "command": "Crie uma função que some 10, 20 e 30 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 60
+    },
+    {
+      "id": 14,
+      "context": "Quadrado: eleve um número ao quadrado.",
+      "command": "Crie uma função que retorne o quadrado de 5 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 25
+    },
+    {
+      "id": 15,
+      "context": "Média aritmética: calcule a média.",
+      "command": "Crie uma função que calcule a média de 4, 8 e 12 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 8
+    },
+    {
+      "id": 16,
+      "context": "Manipulação de string: converta para maiúsculas.",
+      "command": "Crie uma função que converta a string 'Python' para letras maiúsculas e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "PYTHON"
+    },
+    {
+      "id": 17,
+      "context": "Manipulação de string: capitalização.",
+      "command": "Crie uma função que converta a string 'python' para capitalizada (apenas a primeira letra em maiúsculo) e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "Python"
+    },
+    {
+      "id": 18,
+      "context": "Soma sequencial: some números consecutivos.",
+      "command": "Crie uma função que some os números de 1 a 10 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 55
+    },
+    {
+      "id": 19,
+      "context": "Fatorial: calcule o fatorial de um número.",
+      "command": "Crie uma função que calcule o fatorial de 4 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 24
+    },
+    {
+      "id": 20,
+      "context": "Decisão: use condição para retornar uma mensagem.",
+      "command": "Crie uma função que retorne 'Aprovado' se 75 for maior ou igual a 60 e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "Aprovado"
+    },
+    {
+      "id": 21,
+      "context": "Módulo: calcule o resto da divisão.",
+      "command": "Crie uma função que retorne o resto da divisão de 17 por 3 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 2
+    },
+    {
+      "id": 22,
+      "context": "Concatenação: junte strings com espaço.",
+      "command": "Crie uma função que una 'Hello' e 'World' com um espaço no meio e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "Hello World"
+    },
+    {
+      "id": 23,
+      "context": "Lista: retorne uma lista de números.",
+      "command": "Crie uma função que retorne uma lista com os números 1, 2 e 3 e imprima o resultado formatado como '1,2,3'.",
+      "expectedType": "string",
+      "expectedValue": "1,2,3"
+    },
+    {
+      "id": 24,
+      "context": "Acesso a lista: retorne o primeiro elemento.",
+      "command": "Crie uma função que, dada a lista [10, 20, 30], retorne o primeiro elemento e imprima-o.",
+      "expectedType": "number",
+      "expectedValue": 10
+    },
+    {
+      "id": 25,
+      "context": "Acesso a lista: retorne o último elemento.",
+      "command": "Crie uma função que, dada a lista [5, 6, 7, 8], retorne o último elemento e imprima-o.",
+      "expectedType": "number",
+      "expectedValue": 8
+    },
+    {
+      "id": 26,
+      "context": "Soma de lista: some os elementos.",
+      "command": "Crie uma função que some os elementos da lista [1, 2, 3, 4] e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 10
+    },
+    {
+      "id": 27,
+      "context": "Contagem: calcule o tamanho da lista.",
+      "command": "Crie uma função que retorne o número de elementos na lista [9, 8, 7] e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 3
+    },
+    {
+      "id": 28,
+      "context": "Filtragem: retorne os números pares.",
+      "command": "Crie uma função que retorne os números pares de 1 a 10, separados por '\\n', e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "2\n4\n6\n8\n10"
+    },
+    {
+      "id": 29,
+      "context": "Filtragem: retorne os números ímpares.",
+      "command": "Crie uma função que retorne os números ímpares de 1 a 10, separados por '\\n', e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "1\n3\n5\n7\n9"
+    },
+    {
+      "id": 30,
+      "context": "Soma condicional: some somente os pares.",
+      "command": "Crie uma função que some os números pares de 1 a 10 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 30
+    },
+    {
+      "id": 31,
+      "context": "Mapeamento: retorne o quadrado de cada número.",
+      "command": "Crie uma função que retorne os quadrados dos números de 1 a 5, separados por '\\n', e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "1\n4\n9\n16\n25"
+    },
+    {
+      "id": 32,
+      "context": "Sequência: gere a sequência Fibonacci até 21.",
+      "command": "Crie uma função que retorne a sequência Fibonacci (valores separados por '\\n') até o número 21 e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "0\n1\n1\n2\n3\n5\n8\n13\n21"
+    },
+    {
+      "id": 33,
+      "context": "Decisão booleana: condição simples.",
+      "command": "Crie uma função que retorne True se 10 for maior que 5 e imprima o resultado.",
+      "expectedType": "boolean",
+      "expectedValue": true
+    },
+    {
+      "id": 34,
+      "context": "Decisão booleana: condição oposta.",
+      "command": "Crie uma função que retorne False se 3 for maior que 7 e imprima o resultado.",
+      "expectedType": "boolean",
+      "expectedValue": false
+    },
+    {
+      "id": 35,
+      "context": "Divisão inteira: calcule o quociente.",
+      "command": "Crie uma função que retorne o resultado da divisão inteira de 17 por 3 e imprima-o.",
+      "expectedType": "number",
+      "expectedValue": 5
+    },
+    {
+      "id": 36,
+      "context": "Potência: eleve um número ao quadrado.",
+      "command": "Crie uma função que retorne 7 elevado a 2 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 49
+    },
+    {
+      "id": 37,
+      "context": "Repetição de string: multiplique uma palavra.",
+      "command": "Crie uma função que retorne a string 'Python' repetida 3 vezes (sem espaços) e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "PythonPythonPython"
+    },
+    {
+      "id": 38,
+      "context": "Formatação: insira hífens entre caracteres.",
+      "command": "Crie uma função que, dada a string 'ABCDE', retorne os caracteres separados por hífen (ex: 'A-B-C-D-E') e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "A-B-C-D-E"
+    },
+    {
+      "id": 39,
+      "context": "Divisão exata: calcule a divisão.",
+      "command": "Crie uma função que retorne o resultado de 100 dividido por 4 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 25
+    },
+    {
+      "id": 40,
+      "context": "Soma de série: some uma sequência de números.",
+      "command": "Crie uma função que retorne a soma dos números de 1 a 100 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 5050
+    },
+    {
+      "id": 41,
+      "context": "Valor absoluto: calcule o valor absoluto de um número negativo.",
+      "command": "Crie uma função que retorne o valor absoluto de -42 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 42
+    },
+    {
+      "id": 42,
+      "context": "Máximo: identifique o maior número.",
+      "command": "Crie uma função que retorne o maior valor entre 10, 20 e 30 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 30
+    },
+    {
+      "id": 43,
+      "context": "Mínimo: identifique o menor número.",
+      "command": "Crie uma função que retorne o menor valor entre 10, 20 e 30 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 10
+    },
+    {
+      "id": 44,
+      "context": "Raiz quadrada: calcule a raiz de um número.",
+      "command": "Crie uma função que retorne a raiz quadrada de 16 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 4
+    },
+    {
+      "id": 45,
+      "context": "Soma de dígitos: some os dígitos de um número.",
+      "command": "Crie uma função que retorne a soma dos dígitos do número 1234 (1+2+3+4) e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 10
+    },
+    {
+      "id": 46,
+      "context": "Verificação de igualdade: compare dois valores.",
+      "command": "Crie uma função que retorne 'OK' se 100 for igual a 100 e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "OK"
+    },
+    {
+      "id": 47,
+      "context": "Manipulação de string: converta para minúsculas.",
+      "command": "Crie uma função que retorne a string 'Git Game' em minúsculas e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "git game"
+    },
+    {
+      "id": 48,
+      "context": "Substrings: extraia parte de uma string.",
+      "command": "Crie uma função que retorne os 3 primeiros caracteres da string 'Programação' e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "Pro"
+    },
+    {
+      "id": 49,
+      "context": "Concatenação avançada: una duas palavras sem separador.",
+      "command": "Crie uma função que retorne a concatenação das strings 'Data' e 'Science' sem espaços e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "DataScience"
+    },
+    {
+      "id": 50,
+      "context": "Soma condicional: some números pares em um intervalo maior.",
+      "command": "Crie uma função que retorne a soma dos números pares de 1 a 20 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 110
+    },
+    {
+      "id": 51,
+      "context": "Multiplicação escalada: dobre um número.",
+      "command": "Crie uma função que retorne o dobro de 15 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 30
+    },
+    {
+      "id": 52,
+      "context": "Multiplicação escalada: triplique um número.",
+      "command": "Crie uma função que retorne o triplo de 7 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 21
+    },
+    {
+      "id": 53,
+      "context": "Média aritmética: calcule a média de três números.",
+      "command": "Crie uma função que retorne a média aritmética de 3, 6 e 9 e imprima o resultado.",
+      "expectedType": "number",
+      "expectedValue": 6
+    },
+    {
+      "id": 54,
+      "context": "Concatenação avançada: junte duas palavras com separador customizado.",
+      "command": "Crie uma função que retorne a concatenação das strings 'Open' e 'Source' separadas por um espaço e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "Open Source"
+    },
+    {
+      "id": 55,
+      "context": "Valor de pi: apresente um valor aproximado.",
+      "command": "Crie uma função que retorne o valor de pi com duas casas decimais (utilize 3.14) e imprima o resultado.",
+      "expectedType": "string",
+      "expectedValue": "3.14"
+    }
+  ]
+}

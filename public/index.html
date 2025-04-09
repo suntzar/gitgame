@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Git Game: Desafio de Código</title>
+  <!-- CodeMirror CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/dracula.min.css">
+  <style>
+    body {
+      background-color: #282a36;
+      color: #f8f8f2;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 10px;
+    }
+    h1, h2 { text-align: center; }
+    #levelInfo {
+      background: #44475a;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .editor {
+      border: 1px solid #44475a;
+      height: 300px;
+    }
+    @media (max-width:600px) { .editor { height: 200px; } }
+    .btn-container {
+      text-align: center;
+      margin: 10px 0;
+    }
+    button {
+      background-color: #6272a4;
+      color: #f8f8f2;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover { background-color: #7081b6; }
+    #timer {
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    pre#output {
+      background-color: #44475a;
+      padding: 10px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Git Game: Desafio de Código</h1>
+  <div id="levelInfo">
+    <h2 id="levelTitle">Nível ?</h2>
+    <p id="levelContext">Contexto do desafio...</p>
+    <p id="levelCommand"><strong>Comando:</strong> </p>
+    <p id="levelExpected"><strong>Saída esperada:</strong> </p>
+  </div>
+  
+  <div id="timer">Tempo: 0s</div>
+  
+  <textarea id="code" class="editor"></textarea>
+  
+  <div class="btn-container">
+    <button onclick="resetGame()">Reset</button>
+    <button onclick="submitCode()">Submit</button>
+  </div>
+  
+  <pre id="output"></pre>
+  
+  <!-- CodeMirror e Socket.io -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Inicializa o editor CodeMirror
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+      mode: "python",
+      theme: "dracula",
+      lineNumbers: true,
+      indentUnit: 4,
+      autofocus: true
+    });
+    
+    const socket = io();
+    
+    // Atualiza as informações do nível na interface
+    function updateLevelInfo(state) {
+      document.getElementById("levelTitle").innerText = "Nível " + state.currentLevel.id;
+      document.getElementById("levelContext").innerText = state.currentLevel.context;
+      document.getElementById("levelCommand").innerHTML = "<strong>Comando:</strong> " + state.currentLevel.command;
+      document.getElementById("levelExpected").innerHTML = "<strong>Saída esperada (" + state.currentLevel.expectedType + "):</strong> " + state.currentLevel.expectedValue;
+    }
+    
+    // Recebe o estado completo (código, nível, tempo) do servidor
+    socket.on('stateUpdate', (state) => {
+      editor.setValue(state.currentCode);
+      updateLevelInfo(state);
+      document.getElementById("timer").innerText = "Tempo: " + Math.floor(state.elapsedTime / 1000) + "s";
+      document.getElementById("output").innerText = "";
+    });
+    
+    // Atualiza o código em tempo real (colaboração)
+    socket.on('codeUpdate', (newCode) => {
+      const current = editor.getValue();
+      if (current !== newCode) {
+        const cursor = editor.getCursor();
+        editor.setValue(newCode);
+        editor.setCursor(cursor);
+      }
+    });
+    
+    // Atualiza o timer conforme enviado pelo servidor
+    socket.on('timerUpdate', (elapsed) => {
+      document.getElementById("timer").innerText = "Tempo: " + Math.floor(elapsed / 1000) + "s";
+    });
+    
+    // Reinicia a exibição do timer
+    socket.on('timerReset', () => {
+      document.getElementById("timer").innerText = "Tempo: 0s";
+    });
+    
+    // Função debounce para reduzir a frequência de envio de atualizações
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+    
+    // Envia as atualizações do editor para o servidor
+    editor.on("change", debounce(() => {
+      socket.emit('codeUpdate', editor.getValue());
+    }, 300));
+    
+    // Reseta o código e o cronômetro
+    function resetGame() {
+      if (confirm("Deseja resetar o código e o tempo?")) {
+        socket.emit('resetGame');
+      }
+    }
+    
+    // Submete o código para avaliação
+    function submitCode() {
+      document.getElementById("output").innerText = "Processando...";
+      socket.emit('submitCode');
+    }
+    
+    // Exibe o resultado da submissão
+    socket.on('submissionResult', (result) => {
+      document.getElementById("output").innerText = result.message;
+    });
+    
+    // Mensagem de finalização do jogo
+    socket.on('gameComplete', (message) => {
+      alert(message);
+      editor.setValue("");
+    });
+  </script>
+</body>
+</html>
