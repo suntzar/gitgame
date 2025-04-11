@@ -2,196 +2,42 @@
   "levels": [
     {
       "id": 1,
-      "context": "Bem-vindo ao GitGame! Seu primeiro desafio é simples.",
-      "command": "Crie uma função que retorne a string 'Hello World!' e imprima o resultado.",
+      "context": "Seu primeiro desafio: crie uma função simples que imprima 'Hello World!'",
+      "command": "Crie uma função main() que imprima exatamente 'Hello World!'",
       "expectedType": "string",
       "expectedValue": "Hello World!"
     },
     {
       "id": 2,
-      "context": "Desafio de identidade: retorne seu nome.",
-      "command": "Crie uma função que retorne 'Alice' e imprima o resultado.",
-      "expectedType": "string",
-      "expectedValue": "Alice"
+      "context": "Soma em dupla: desenvolva uma função que some dois números.",
+      "command": "Crie uma função init(a, b) que retorne a soma de a e b. O nível define 5 pares de entrada e a saída deverá ser a soma correspondente.",
+      "expectedType": "number",
+      "inputs": [[1, 1], [2, 3], [5, 7], [10, 20], [8, 4]],
+      "expectedOutputs": [2, 5, 12, 30, 12]
     },
     {
       "id": 3,
-      "context": "Soma simples: some dois números.",
-      "command": "Crie uma função que some 2 e 3 e imprima o resultado.",
+      "context": "Fatorial: escreva uma função que calcule o fatorial de um número.",
+      "command": "Crie uma função init(n) que retorne o fatorial de n. O nível fornecerá 5 valores de entrada distintos.",
       "expectedType": "number",
-      "expectedValue": 5
+      "inputs": [[3], [4], [5], [6], [7]],
+      "expectedOutputs": [6, 24, 120, 720, 5040]
     },
     {
       "id": 4,
-      "context": "Subtração básica: subtraia dois números.",
-      "command": "Crie uma função que retorne a diferença entre 10 e 4 e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 6
+      "context": "Inversão de string: desenvolva uma função que inverta uma string.",
+      "command": "Crie uma função init(s) que retorne a string s invertida. O nível fornecerá 5 strings diferentes.",
+      "expectedType": "string",
+      "inputs": [["apple"], ["GitGame"], ["Python"], ["racecar"], ["desserts"]],
+      "expectedOutputs": ["elppa", "emaGit", "nohtyP", "racecar", "stressed"]
     },
     {
       "id": 5,
-      "context": "Multiplicação: produto de dois números.",
-      "command": "Crie uma função que retorne o produto de 3 e 7 e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 21
-    },
-    {
-      "id": 6,
-      "context": "Divisão: divisão exata.",
-      "command": "Crie uma função que retorne a divisão de 20 por 4 e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 5
-    },
-    {
-      "id": 7,
-      "context": "Potência: eleve um número a uma potência.",
-      "command": "Crie uma função que retorne 2 elevado a 3 e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 8
-    },
-    {
-      "id": 8,
-      "context": "Sequência: gere os números de 1 a 5.",
-      "command": "Crie uma função que retorne os números de 1 a 5 separados por '\\n' e imprima o resultado.",
-      "expectedType": "string",
-      "expectedValue": "1\n2\n3\n4\n5"
-    },
-    {
-      "id": 9,
-      "context": "String invertida: inverta uma palavra.",
-      "command": "Crie uma função que retorne a palavra 'Python' invertida e imprima o resultado.",
-      "expectedType": "string",
-      "expectedValue": "nohtyP"
-    },
-    {
-      "id": 10,
-      "context": "Comprimento: meça o tamanho de uma palavra.",
-      "command": "Crie uma função que retorne o comprimento de 'Desenvolvimento' e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 15
-    },
-    {
-      "id": 11,
-      "context": "Concatenação: junte duas strings com espaço.",
-      "command": "Crie uma função que retorne a concatenação de 'Foo' e 'Bar' com um espaço e imprima o resultado.",
-      "expectedType": "string",
-      "expectedValue": "Foo Bar"
-    },
-    {
-      "id": 12,
-      "context": "Conversão: transforme '123' em inteiro.",
-      "command": "Crie uma função que converta '123' para inteiro e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 123
-    },
-    {
-      "id": 13,
-      "context": "Soma múltipla: some vários números.",
-      "command": "Crie uma função que some 10, 20 e 30 e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 60
-    },
-    {
-      "id": 14,
-      "context": "Quadrado: eleve um número ao quadrado.",
-      "command": "Crie uma função que retorne o quadrado de 5 e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 25
-    },
-    {
-      "id": 15,
-      "context": "Média: calcule a média de três números.",
-      "command": "Crie uma função que calcule a média de 4, 8 e 12 e imprima o resultado.",
-      "expectedType": "number",
-      "expectedValue": 8
-    },
-    {
-      "id": 16,
-      "context": "Função init – Soma: some dois números com parâmetros.",
-      "command": "Crie uma função init(a, b) que retorne a soma de a e b e imprima o resultado. O nível fornece 5 pares de entrada.",
-      "expectedType": "number",
-      "inputs": [[1,1], [2,1], [2,2], [2,3], [2,4]],
-      "expectedOutputs": [2, 3, 4, 5, 6]
-    },
-    {
-      "id": 17,
-      "context": "Função init – Subtração: subtraia dois números.",
-      "command": "Crie uma função init(a, b) que retorne a diferença entre a e b e imprima o resultado. Use 5 pares de entrada.",
-      "expectedType": "number",
-      "inputs": [[10,4], [20,5], [15,3], [8,2], [50,20]],
-      "expectedOutputs": [6, 15, 12, 6, 30]
-    },
-    {
-      "id": 18,
-      "context": "Função init – Multiplicação: produto de dois números.",
-      "command": "Crie uma função init(a, b) que retorne o produto de a e b e imprima o resultado. O nível fornece 5 pares de entrada.",
-      "expectedType": "number",
-      "inputs": [[3,3], [2,5], [4,4], [6,2], [7,3]],
-      "expectedOutputs": [9, 10, 16, 12, 21]
-    },
-    {
-      "id": 19,
-      "context": "Função init – Divisão inteira: divida dois números.",
-      "command": "Crie uma função init(a, b) que retorne o resultado da divisão inteira de a por b e imprima o resultado. Use 5 pares de entrada.",
-      "expectedType": "number",
-      "inputs": [[17,3], [20,4], [15,5], [100,10], [50,2]],
-      "expectedOutputs": [5, 5, 3, 10, 25]
-    },
-    {
-      "id": 20,
-      "context": "Função init – Potência: eleve um número a uma potência.",
-      "command": "Crie uma função init(a, b) que retorne a potência de a elevado a b e imprima o resultado. Defina 5 pares de entrada.",
-      "expectedType": "number",
-      "inputs": [[2,3], [3,2], [4,2], [5,2], [2,5]],
-      "expectedOutputs": [8, 9, 16, 25, 32]
-    },
-    {
-      "id": 21,
-      "context": "Função init – Igualdade: verifique se dois números são iguais.",
-      "command": "Crie uma função init(a, b) que retorne True se a for igual a b, caso contrário False, e imprima o resultado. Use 5 pares de entrada.",
+      "context": "Palíndromo: verifique se uma string é palíndroma.",
+      "command": "Crie uma função init(s) que retorne True se s for um palíndromo (desconsiderando diferenças de maiúsculas/minúsculas) e False caso contrário. O nível fornecerá 5 strings.",
       "expectedType": "boolean",
-      "inputs": [[5,5], [3,4], [10,10], [7,8], [2,3]],
-      "expectedOutputs": [true, false, true, false, false]
-    },
-    {
-      "id": 22,
-      "context": "Função init – Concatenação: una duas strings sem espaços.",
-      "command": "Crie uma função init(a, b) que retorne a concatenação de a e b sem espaços e imprima o resultado. Use 5 pares de entrada.",
-      "expectedType": "string",
-      "inputs": [["Data","Science"], ["Git","Game"], ["Hello","World"], ["Foo","Bar"], ["Open","Source"]],
-      "expectedOutputs": ["DataScience", "GitGame", "HelloWorld", "FooBar", "OpenSource"]
-    },
-    {
-      "id": 23,
-      "context": "Função init – Máximo: retorne o maior entre dois números.",
-      "command": "Crie uma função init(a, b) que retorne o maior entre a e b e imprima o resultado. Use 5 pares de entrada.",
-      "expectedType": "number",
-      "inputs": [[10,20], [30,25], [5,5], [100,50], [7,9]],
-      "expectedOutputs": [20, 30, 5, 100, 9]
-    },
-    {
-      "id": 24,
-      "context": "Função init – Valor absoluto: calcule o valor absoluto de um número.",
-      "command": "Crie uma função init(a) que retorne o valor absoluto de a e imprima o resultado. Defina 5 entradas.",
-      "expectedType": "number",
-      "inputs": [[-5], [10], [-42], [0], [-1]],
-      "expectedOutputs": [5, 10, 42, 0, 1]
-    },
-    {
-      "id": 25,
-      "context": "Função init – String maiúscula: converta uma string para maiúsculas.",
-      "command": "Crie uma função init(a) que retorne a string a em maiúsculas e imprima o resultado. Use 5 entradas.",
-      "expectedType": "string",
-      "inputs": [["hello"], ["git game"], ["Python"], ["data"], ["source"]],
-      "expectedOutputs": ["HELLO", "GIT GAME", "PYTHON", "DATA", "SOURCE"]
-    },
-    // ... Continue definindo níveis até o 55; para fins de exemplo, os próximos níveis seguem um padrão similar ...
-    {
-      "id": 55,
-      "context": "Valor de pi: formate com duas casas decimais.",
-      "command": "Crie uma função init() que retorne o valor de pi formatado com duas casas decimais (use 3.14) e imprima o resultado.",
-      "expectedType": "string",
-      "expectedValue": "3.14"
+      "inputs": [["Radar"], ["Hello"], ["Level"], ["World"], ["Madam"]],
+      "expectedOutputs": [true, false, true, false, true]
     }
   ]
 }
