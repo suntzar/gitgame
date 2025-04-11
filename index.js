@@ -1,265 +1,250 @@
-const express = require('express');
-const { exec } = require('child_process');
-const { v4: uuidv4 } = require('uuid');
-const path = require('path');
-const http = require('http');
-const fs = require('fs');
+const express = require("express");
+const { exec } = require("child_process");
+const { v4: uuidv4 } = require("uuid");
+const path = require("path");
+const http = require("http");
+const fs = require("fs");
 
 const app = express();
 const server = http.createServer(app);
-const io = require('socket.io')(server);
+const io = require("socket.io")(server);
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-// Carrega os níveis – observe que nos níveis a função a ser implementada é test()
+// Carrega os níveis (5 níveis desafiadores)
 let levels;
 try {
-  levels = JSON.parse(fs.readFileSync('levels.json', 'utf8')).levels;
+    levels = JSON.parse(fs.readFileSync("levels.json", "utf8")).levels;
 } catch (err) {
-  console.error("Erro ao carregar levels.json:", err);
-  process.exit(1);
+    console.error("Erro ao carregar levels.json:", err);
+    process.exit(1);
 }
 
-// Estrutura para gerenciar salas: cada chave é o nome da sala
+// Objeto para gerenciar salas; cada chave é o nome da sala
 let rooms = {};
 
-/* Função para criar uma nova sala.
-   data = { roomName, password (opcional), hostName, turnTime }
-*/
-function createRoom(data, socket) {
-  const { roomName, password, hostName, turnTime } = data;
-  if (rooms[roomName]) {
-    socket.emit('roomError', { message: "Nome de sala já existe." });
-    return;
-  }
-  // Cria o objeto sala com propriedades iniciais
-  rooms[roomName] = {
-    roomName,
-    password: password || null,
-    hostName,
-    turnTime: parseInt(turnTime) || 60,
-    players: [], // cada jogador: { id, name }
-    currentTurnIndex: 0,
-    currentLevelIndex: 0,
-    currentLevel: levels[0],
-    currentCode: "",
-    levelStartTime: Date.now(),
-    turnStartTime: Date.now(),
-    turnInterval: null
-  };
-  // O host entra na sala
-  joinRoom({ roomName, playerName: hostName, password }, socket);
-}
+/**
+ * Estrutura de uma sala:
+ * {
+ *    roomName: string,
+ *    password: string (opcional),
+ *    host: { id, name },
+ *    players: [ { id, name } ],
+ *    options: { turnTime: number },
+ *    gameState: {
+ *         currentLevelIndex, currentLevel, currentCode, levelStartTime,
+ *         turn: { currentTurnIndex, turnStartTime, turnInterval }
+ *    }
+ * }
+ */
 
-/* Função para que um jogador entre em uma sala.
-   data = { roomName, playerName, password (se necessário) }
-*/
-function joinRoom(data, socket) {
-  const { roomName, playerName, password } = data;
-  const room = rooms[roomName];
-  if (!room) {
-    socket.emit('roomError', { message: "Sala não encontrada." });
-    return;
-  }
-  if (room.password && room.password !== password) {
-    socket.emit('roomError', { message: "Senha incorreta." });
-    return;
-  }
-  // Adiciona o jogador à sala, se ainda não estiver
-  if (!room.players.find(p => p.id === socket.id)) {
-    room.players.push({ id: socket.id, name: playerName });
-    socket.join(roomName);
-    // Informa a todos na sala que um novo jogador entrou
-    io.to(roomName).emit('roomUpdate', { room, players: room.players });
-  }
-  // Envia o estado do jogo para este jogador
-  socket.emit('stateUpdate', {
-    currentCode: room.currentCode,
-    currentLevel: room.currentLevel,
-    globalElapsed: Date.now() - room.levelStartTime,
-    roomName: room.roomName,
-    turnTime: room.turnTime
-  });
-}
-
-/* Lógica de turnos por sala */
-function startTurn(room) {
-  if (room.players.length === 0) return;
-  room.currentTurnIndex = room.currentTurnIndex % room.players.length;
-  const currentTurnID = room.players[room.currentTurnIndex].id;
-  room.turnStartTime = Date.now();
-  io.to(room.roomName).emit('turnUpdate', currentTurnID);
-  if (room.turnInterval) clearInterval(room.turnInterval);
-  room.turnInterval = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - room.turnStartTime) / 1000);
-    const remaining = Math.max(0, room.turnTime - elapsed);
-    io.to(room.roomName).emit('turnTimerUpdate', remaining);
-    if (remaining <= 0) nextTurn(room);
-  }, 1000);
-}
-
-function nextTurn(room) {
-  if (room.players.length === 0) return;
-  room.currentTurnIndex = (room.currentTurnIndex + 1) % room.players.length;
-  startTurn(room);
-}
-
-// Cronômetro global do nível (para cada sala, enviado a cada segundo)
-function startGlobalTimer(room) {
-  setInterval(() => {
-    const elapsed = Date.now() - room.levelStartTime;
-    io.to(room.roomName).emit('globalTimerUpdate', elapsed);
-  }, 1000);
-}
-
-// Função para verificação do output (tipo e valor)
-function verifyOutput(output, expectedType, expectedValue) {
-  if (expectedType === "number") {
-    const num = Number(output);
-    if (isNaN(num)) return false;
-    return num === expectedValue;
-  } else if (expectedType === "boolean") {
-    const boolVal = output.trim().toLowerCase();
-    return (expectedValue === true && boolVal === "true") ||
-           (expectedValue === false && boolVal === "false");
-  } else if (expectedType === "string") {
-    return output === expectedValue;
-  } else {
-    return output === expectedValue;
-  }
-}
-
-// Socket.io: eventos para criação de sala, entrada e ações do jogo
-io.on('connection', socket => {
-  console.log("Cliente conectado:", socket.id);
-  
-  // O cliente pode criar uma sala:
-  // Dados: { roomName, password, hostName, turnTime }
-  socket.on('createRoom', data => {
-    createRoom(data, socket);
-  });
-  
-  // O cliente pode entrar em uma sala:
-  // Dados: { roomName, playerName, password }
-  socket.on('joinRoom', data => {
-    joinRoom(data, socket);
-  });
-  
-  // Evento para atualização colaborativa do código dentro da sala.
-  // Dados: { roomName, newCode }
-  socket.on('codeUpdate', data => {
-    const { roomName, newCode } = data;
-    const room = rooms[roomName];
-    if (!room) return;
-    // Apenas o jogador da vez pode enviar alterações.
-    const currentTurnID = room.players[room.currentTurnIndex].id;
-    if (socket.id === currentTurnID) {
-      room.currentCode = newCode;
-      socket.broadcast.to(roomName).emit('codeUpdate', newCode);
+// Cria uma nova sala (somente se o nome não existir)
+app.post("/createRoom", (req, res) => {
+    const { roomName, password, hostName, turnTime } = req.body;
+    if (!roomName || !hostName) {
+        return res.status(400).json({ message: "roomName e hostName são obrigatórios." });
     }
-  });
-  
-  // Evento para passar a vez
-  // Dados: { roomName }
-  socket.on('passTurn', data => {
-    const { roomName } = data;
-    const room = rooms[roomName];
-    if (!room) return;
-    const currentTurnID = room.players[room.currentTurnIndex].id;
-    if (socket.id === currentTurnID) nextTurn(room);
-  });
-  
-  // Reset do nível (código e cronômetro) para a sala
-  // Dados: { roomName }
-  socket.on('resetGame', data => {
-    const { roomName } = data;
-    const room = rooms[roomName];
-    if (!room) return;
-    room.currentCode = "";
-    room.levelStartTime = Date.now();
-    io.to(roomName).emit('codeUpdate', room.currentCode);
-    io.to(roomName).emit('globalTimerReset');
-  });
-  
-  // Submissão do código para validação.
-  // Dados: { roomName }
-  socket.on('submitCode', data => {
-    const { roomName } = data;
-    const room = rooms[roomName];
-    if (!room) return;
-    let codeToRun = room.currentCode;
-    // Se o nível usa inputs (para a função test), insere a chamada com o input escolhido.
-    if (room.currentLevel.inputs) {
-      if (!room.currentLevel.chosenInput) {
-        const idx = Math.floor(Math.random() * room.currentLevel.inputs.length);
-        room.currentLevel.chosenInput = room.currentLevel.inputs[idx];
-        room.currentLevel.chosenExpectedOutput = room.currentLevel.expectedOutputs[idx];
-      }
-      const args = room.currentLevel.chosenInput.join(", ");
-      codeToRun += `\nprint(test(${args}))`;
+    if (rooms[roomName]) {
+        return res.status(400).json({ message: "Sala com esse nome já existe." });
     }
-    const tempFile = `temp_${uuidv4()}.py`;
-    fs.writeFileSync(tempFile, codeToRun);
-    exec(`python3 ${tempFile}`, { timeout: 5000 }, (error, stdout, stderr) => {
-      fs.unlinkSync(tempFile);
-      if (error) {
-        socket.emit('submissionResult', { success: false, message: stderr || error.message });
-      } else {
-        const output = stdout.trim();
-        const expected = room.currentLevel.inputs ? room.currentLevel.chosenExpectedOutput : room.currentLevel.expectedValue;
-        if (verifyOutput(output, room.currentLevel.expectedType, expected)) {
-          const timeTaken = Date.now() - room.levelStartTime;
-          const codeLength = room.currentCode.length;
-          const score = Math.max(0, Math.floor(10000 - timeTaken / 10 - codeLength));
-          io.to(roomName).emit('submissionResult', { success: true, message: `Nível ${room.currentLevel.id} completado em ${(timeTaken/1000).toFixed(1)}s! Score: ${score}` });
-          // Avança para o próximo nível ou finaliza se for o último
-          if (room.currentLevelIndex < levels.length - 1) {
-            room.currentLevelIndex++;
-            room.currentLevel = levels[room.currentLevelIndex];
-            if (room.currentLevel.inputs) {
-              const idx = Math.floor(Math.random() * room.currentLevel.inputs.length);
-              room.currentLevel.chosenInput = room.currentLevel.inputs[idx];
-              room.currentLevel.chosenExpectedOutput = room.currentLevel.expectedOutputs[idx];
-            }
-            room.currentCode = "";
-            room.levelStartTime = Date.now();
-            io.to(roomName).emit('stateUpdate', {
-              currentCode: room.currentCode,
-              currentLevel: room.currentLevel,
-              globalElapsed: 0,
-              roomName,
-              turnTime: room.turnTime
-            });
-          } else {
-            io.to(roomName).emit('gameComplete', "Parabéns, todos os níveis foram completados!");
-          }
-        } else {
-          socket.emit('submissionResult', { success: false, message: `Saída incorreta. Esperado (${room.currentLevel.expectedType}): ${expected}, obtido: ${output}` });
+    // Cria o estado inicial da sala
+    const gameState = {
+        currentLevelIndex: 0,
+        currentLevel: levels[0],
+        currentCode: "",
+        levelStartTime: Date.now(),
+        turn: {
+            currentTurnIndex: 0,
+            turnStartTime: Date.now(),
+            turnInterval: null
         }
-      }
-    });
-  });
-  
-  // Trata a desconexão: remove o jogador da sala e, se necessário, passa a vez
-  socket.on('disconnect', () => {
-    console.log("Cliente desconectado:", socket.id);
-    for (const roomName in rooms) {
-      const room = rooms[roomName];
-      room.players = room.players.filter(p => p.id !== socket.id);
-      io.to(roomName).emit('roomUpdate', { room, players: room.players });
-      if (room.players.length === 0) {
-        // Se a sala ficar vazia, pode ser removida
-        if (room.turnInterval) clearInterval(room.turnInterval);
-        delete rooms[roomName];
-      } else if (socket.id === room.players[room.currentTurnIndex]?.id) {
-        nextTurn(room);
-      }
-    }
-  });
+    };
+    rooms[roomName] = {
+        roomName,
+        password: password || null,
+        host: { id: null, name: hostName }, // O host.id será definido na conexão
+        players: [],
+        options: { turnTime: Number(turnTime) || 60 },
+        gameState
+    };
+    return res.json({ message: "Sala criada com sucesso!", roomName });
 });
+
+// Permite que um jogador entre em uma sala
+app.post("/joinRoom", (req, res) => {
+    const { roomName, password, playerName } = req.body;
+    if (!roomName || !playerName) {
+        return res.status(400).json({ message: "roomName e playerName são obrigatórios." });
+    }
+    const room = rooms[roomName];
+    if (!room) {
+        return res.status(404).json({ message: "Sala não encontrada." });
+    }
+    if (room.password && room.password !== password) {
+        return res.status(403).json({ message: "Senha incorreta." });
+    }
+    return res.json({ message: "Entrou na sala com sucesso!", roomName });
+});
+
+// Socket.io: gerenciamento de conexão e salas
+io.on("connection", socket => {
+    console.log("Cliente conectado:", socket.id);
+    let currentRoom = null; // sala que o socket pertence
+
+    // Evento para entrar em uma sala
+    socket.on("joinRoomSocket", ({ roomName, playerName }) => {
+        const room = rooms[roomName];
+        if (!room) {
+            socket.emit("errorMessage", "Sala não encontrada.");
+            return;
+        }
+        // Define o host, se ainda não definido
+        if (!room.host.id) {
+            room.host.id = socket.id;
+            room.host.name = playerName;
+        }
+        // Adiciona o jogador se não estiver na lista
+        if (!room.players.find(p => p.id === socket.id)) {
+            room.players.push({ id: socket.id, name: playerName });
+        }
+        currentRoom = roomName;
+        socket.join(roomName);
+        // Envia o estado atual da sala para o novo jogador
+        socket.emit("stateUpdate", room.gameState);
+        // Atualiza todos na sala com a lista de jogadores e turno
+        io.in(roomName).emit("playersUpdate", room.players);
+        // Se o host for definido e nenhum turno estiver ativo, inicia o turno
+        if (room.players.length > 0 && !room.gameState.turn.turnInterval) {
+            startTurnInRoom(roomName);
+        }
+    });
+
+    // Envia atualizações de código dentro da sala
+    socket.on("codeUpdate", newCode => {
+        if (!currentRoom) return;
+        const room = rooms[currentRoom];
+        // Só permite se for a vez do jogador
+        const currentTurnID = room.players[room.gameState.turn.currentTurnIndex].id;
+        if (socket.id === currentTurnID) {
+            room.gameState.currentCode = newCode;
+            socket.to(currentRoom).emit("codeUpdate", newCode);
+        }
+    });
+
+    // Evento para passar a vez (somente se for a vez do jogador)
+    socket.on("passTurn", () => {
+        if (!currentRoom) return;
+        const room = rooms[currentRoom];
+        const currentTurnID = room.players[room.gameState.turn.currentTurnIndex].id;
+        if (socket.id === currentTurnID) {
+            nextTurnInRoom(currentRoom);
+        }
+    });
+
+    // Evento para reset do jogo na sala (reinicia código e cronômetro global)
+    socket.on("resetGame", () => {
+        if (!currentRoom) return;
+        const room = rooms[currentRoom];
+        room.gameState.currentCode = "";
+        room.gameState.levelStartTime = Date.now();
+        io.in(currentRoom).emit("codeUpdate", "");
+        io.in(currentRoom).emit("globalTimerReset");
+    });
+
+    // Submissão do código para validação
+    socket.on("submitCode", () => {
+        if (!currentRoom) return;
+        const room = rooms[currentRoom];
+        let codeToRun = room.gameState.currentCode;
+        // Se o nível usa inputs, insere chamada da função test() com o input escolhido
+        if (room.gameState.currentLevel.inputs) {
+            if (!room.gameState.currentLevel.chosenInput) {
+                const idx = Math.floor(Math.random() * room.gameState.currentLevel.inputs.length);
+                room.gameState.currentLevel.chosenInput = room.gameState.currentLevel.inputs[idx];
+                room.gameState.currentLevel.chosenExpectedOutput = room.gameState.currentLevel.expectedOutputs[idx];
+            }
+            const args = room.gameState.currentLevel.chosenInput.join(", ");
+            codeToRun += `\nprint(test(${args}))`;
+        }
+        const tempFile = `temp_${uuidv4()}.py`;
+        fs.writeFileSync(tempFile, codeToRun);
+        exec(`python3 ${tempFile}`, { timeout: 5000 }, (error, stdout, stderr) => {
+            fs.unlinkSync(tempFile);
+            if (error) {
+                socket.emit("submissionResult", { success: false, message: stderr || error.message });
+            } else {
+                const output = stdout.trim();
+                const expected = room.gameState.currentLevel.inputs ? room.gameState.currentLevel.chosenExpectedOutput : room.gameState.currentLevel.expectedValue;
+                if (verifyOutput(output, room.gameState.currentLevel.expectedType, expected)) {
+                    const timeTaken = Date.now() - room.gameState.levelStartTime;
+                    const codeLength = room.gameState.currentCode.length;
+                    const score = Math.max(0, Math.floor(10000 - timeTaken / 10 - codeLength));
+                    io.in(currentRoom).emit("submissionResult", { success: true, message: `Nível ${room.gameState.currentLevel.id} completado em ${(timeTaken / 1000).toFixed(1)}s! Score: ${score}` });
+                    // Avança para o próximo nível ou finaliza o jogo
+                    if (room.gameState.currentLevelIndex < levels.length - 1) {
+                        room.gameState.currentLevelIndex++;
+                        room.gameState.currentLevel = levels[room.gameState.currentLevelIndex];
+                        if (room.gameState.currentLevel.inputs) {
+                            const idx = Math.floor(Math.random() * room.gameState.currentLevel.inputs.length);
+                            room.gameState.currentLevel.chosenInput = room.gameState.currentLevel.inputs[idx];
+                            room.gameState.currentLevel.chosenExpectedOutput = room.gameState.currentLevel.expectedOutputs[idx];
+                        }
+                        room.gameState.currentCode = "";
+                        room.gameState.levelStartTime = Date.now();
+                        io.in(currentRoom).emit("stateUpdate", room.gameState);
+                    } else {
+                        io.in(currentRoom).emit("gameComplete", "Parabéns, todos os níveis foram completados!");
+                    }
+                } else {
+                    socket.emit("submissionResult", { success: false, message: `Saída incorreta. Esperado (${room.gameState.currentLevel.expectedType}): ${expected}, obtido: ${output}` });
+                }
+            }
+        });
+    });
+
+    // Em caso de desconexão, remove o jogador da sala e atualiza turnos
+    socket.on("disconnect", () => {
+        console.log("Cliente desconectado:", socket.id);
+        if (currentRoom) {
+            const room = rooms[currentRoom];
+            room.players = room.players.filter(p => p.id !== socket.id);
+            io.in(currentRoom).emit("playersUpdate", room.players);
+            if (room.players.length === 0) {
+                if (room.gameState.turn.turnInterval) clearInterval(room.gameState.turn.turnInterval);
+                delete rooms[currentRoom];
+            } else if (socket.id === room.players[room.gameState.turn.currentTurnIndex]?.id) {
+                nextTurnInRoom(currentRoom);
+            }
+        }
+    });
+});
+
+// Funções para gerenciar turnos em uma sala
+function startTurnInRoom(roomName) {
+    const room = rooms[roomName];
+    if (!room || room.players.length === 0) return;
+    room.gameState.turn.currentTurnIndex = room.gameState.turn.currentTurnIndex % room.players.length;
+    const currentTurnID = room.players[room.gameState.turn.currentTurnIndex].id;
+    room.gameState.turn.turnStartTime = Date.now();
+    io.in(roomName).emit("turnUpdate", currentTurnID);
+    if (room.gameState.turn.turnInterval) clearInterval(room.gameState.turn.turnInterval);
+    room.gameState.turn.turnInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - room.gameState.turn.turnStartTime) / 1000);
+        const remaining = Math.max(0, room.options.turnTime - elapsed);
+        io.in(roomName).emit("turnTimerUpdate", remaining);
+        if (remaining <= 0) nextTurnInRoom(roomName);
+    }, 1000);
+}
+
+function nextTurnInRoom(roomName) {
+    const room = rooms[roomName];
+    if (!room || room.players.length === 0) return;
+    room.gameState.turn.currentTurnIndex = (room.gameState.turn.currentTurnIndex + 1) % room.players.length;
+    startTurnInRoom(roomName);
+}
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`Servidor rodando na porta ${PORT}`);
 });

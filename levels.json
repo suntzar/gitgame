@@ -2,15 +2,15 @@
     "levels": [
         {
             "id": 1,
-            "context": "Seu primeiro desafio é simples: exiba 'Hello World!'",
+            "context": "Desafio Inicial: Mostre a mensagem 'Hello World!'",
             "command": "Crie uma função main() que imprima exatamente 'Hello World!'",
             "expectedType": "string",
             "expectedValue": "Hello World!"
         },
         {
             "id": 2,
-            "context": "Soma: desenvolva uma função que some dois números.",
-            "command": "Crie uma função test(a, b) que retorne a soma de a e b. O nível define 5 pares de entrada; a saída deverá ser a soma correspondente.",
+            "context": "Soma: Crie uma função test(a, b) que retorne a soma de a e b.",
+            "command": "Crie uma função test(a, b) que retorne a soma de a e b. O nível define 5 pares de entrada e a saída deve ser a soma correspondente.",
             "expectedType": "number",
             "inputs": [
                 [1, 1],
@@ -23,7 +23,7 @@
         },
         {
             "id": 3,
-            "context": "Fatorial: calcule o fatorial de um número.",
+            "context": "Fatorial: Calcule o fatorial de um número.",
             "command": "Crie uma função test(n) que retorne o fatorial de n. O nível fornece 5 valores de entrada.",
             "expectedType": "number",
             "inputs": [[3], [4], [5], [6], [7]],
@@ -31,7 +31,7 @@
         },
         {
             "id": 4,
-            "context": "Inversão de string: retorne a string invertida.",
+            "context": "Inversão de String: Retorne a string invertida.",
             "command": "Crie uma função test(s) que retorne a string s invertida. O nível fornece 5 strings.",
             "expectedType": "string",
             "inputs": [["apple"], ["GitGame"], ["Python"], ["racecar"], ["desserts"]],
@@ -39,7 +39,7 @@
         },
         {
             "id": 5,
-            "context": "Palíndromo: verifique se uma string é palíndroma.",
+            "context": "Palíndromo: Verifique se a string é palíndroma.",
             "command": "Crie uma função test(s) que retorne True se s for palíndromo (ignorando maiúsculas/minúsculas) e False caso contrário. O nível fornece 5 strings.",
             "expectedType": "boolean",
             "inputs": [["Radar"], ["Hello"], ["Level"], ["World"], ["Madam"]],

@@ -3,130 +3,125 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GitGame - Entrar ou Criar Sala</title>
+    <title>GitGame - Lobby</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/darcula.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/node-waves/0.7.6/waves.min.css" />
     <style>
+        /* Estilos gerais baseados no template fornecido */
         :root {
             --tp-accent: #e56700;
             --tp-accent-hover: #fca34d;
             --tp-accent-rgb: 229, 103, 0;
             --turn-time-total: 60;
         }
-        body { background-color: #2b2b2b; color: #f8f8f2; }
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        main { flex-grow: 1; }
+        .header-title { margin: 0; font-size: 1.8rem; font-weight: 600; }
+        .header-title .git-part { color: var(--tp-accent); }
+        .output-block { font-family: monospace; font-size: 0.9rem; background-color: #343a40; color: #ced4da; padding: 1rem; border-radius: 0.25rem; margin-top: 1.5rem; white-space: pre-wrap; border: 1px solid #495057; }
+        .output-block.success { color: #198754; border-left: 4px solid #198754; background-color: rgba(25,135,84,0.1); }
+        .output-block.error { color: #dc3545; border-left: 4px solid #dc3545; background-color: rgba(220,53,69,0.1); }
+        .btn-accent { --bs-btn-color: #fff; --bs-btn-bg: var(--tp-accent); --bs-btn-border-color: var(--tp-accent); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--tp-accent-hover); --bs-btn-hover-border-color: var(--tp-accent-hover); --bs-btn-focus-shadow-rgb: var(--tp-accent-rgb); --bs-btn-active-color: #fff; --bs-btn-active-bg: var(--tp-accent-hover); --bs-btn-active-border-color: var(--tp-accent-hover); }
+        .codemirror-container { padding: 0; overflow: hidden; border: 1px solid #495057; border-radius: 0.25rem; margin-bottom: 1rem; background-color: #343a40; }
+        .CodeMirror { border: none; border-radius: inherit; }
+        .cm-s-darcula { background-color: #2b2b2b; color: #a9b7c6; font-family: monospace; font-size: 0.95rem; }
     </style>
 </head>
 <body>
-    <!-- Tela de Entrada / Criação de Sala -->
-    <div id="lobby" class="container py-5">
-        <h1 class="mb-4 text-center">GitGame - Lobby</h1>
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <h3>Criar Sala</h3>
-                <form id="createRoomForm">
+    <header class="p-3 border-bottom shadow-sm">
+        <div class="d-flex align-items-center">
+             <h1 class="header-title me-auto"><span class="git-part">Git</span>Game <small class="text-body-secondary fs-6 fw-normal">(Co-op Turno Compacto)</small></h1>
+        </div>
+    </header>
+  
+    <!-- Tela de Lobby -->
+    <main class="container-lg py-4" id="lobbyArea">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title">Criar ou Entrar em uma Sala</h2>
+                <form id="lobbyForm">
                     <div class="mb-3">
-                        <label for="createRoomName" class="form-label">Nome da Sala</label>
-                        <input type="text" class="form-control" id="createRoomName" required>
+                        <label for="roomName" class="form-label">Nome da Sala</label>
+                        <input type="text" class="form-control" id="roomName" required>
                     </div>
                     <div class="mb-3">
-                        <label for="createRoomPassword" class="form-label">Senha (opcional)</label>
-                        <input type="text" class="form-control" id="createRoomPassword">
-                    </div>
-                    <div class="mb-3">
-                        <label for="hostName" class="form-label">Seu Nome (Host)</label>
-                        <input type="text" class="form-control" id="hostName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="turnTime" class="form-label">Tempo por Turno (segundos)</label>
-                        <input type="number" class="form-control" id="turnTime" value="60" required>
-                    </div>
-                    <button type="submit" class="btn btn-accent">Criar Sala</button>
-                </form>
-            </div>
-            <div class="col-md-6 mb-3">
-                <h3>Entrar em Sala</h3>
-                <form id="joinRoomForm">
-                    <div class="mb-3">
-                        <label for="joinRoomName" class="form-label">Nome da Sala</label>
-                        <input type="text" class="form-control" id="joinRoomName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="joinRoomPassword" class="form-label">Senha (se aplicável)</label>
-                        <input type="text" class="form-control" id="joinRoomPassword">
+                        <label for="roomPassword" class="form-label">Senha da Sala (opcional)</label>
+                        <input type="password" class="form-control" id="roomPassword">
                     </div>
                     <div class="mb-3">
                         <label for="playerName" class="form-label">Seu Nome</label>
                         <input type="text" class="form-control" id="playerName" required>
                     </div>
-                    <button type="submit" class="btn btn-accent">Entrar na Sala</button>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isHost">
+                        <label class="form-check-label" for="isHost">Criar Sala (Host)</label>
+                    </div>
+                    <div class="mb-3" id="hostOptions" style="display: none;">
+                        <label for="turnTime" class="form-label">Tempo por Turno (segundos)</label>
+                        <input type="number" class="form-control" id="turnTime" value="60" min="10" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Entrar</button>
                 </form>
             </div>
         </div>
-        <div id="lobbyError" class="mt-3 text-danger"></div>
-    </div>
+    </main>
   
-    <!-- Tela do Jogo -->
-    <div id="gameArea" class="container d-none">
-        <header class="p-3 border-bottom shadow-sm mb-4">
-            <div class="d-flex align-items-center">
-                <h1 class="header-title me-auto"><span class="git-part">Git</span>Game <small class="text-body-secondary fs-6 fw-normal">(Co-op Conceitual)</small></h1>
+    <!-- Interface do Jogo (inicialmente oculta) -->
+    <main class="container-lg py-4" id="gameArea" style="display:none;">
+        <!-- Card de Descrição do Nível -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title"><span id="levelTitle">Nível ?</span></h2>
+                <p id="levelDescription" class="text-body-secondary"></p>
+                <p id="levelCommand" class="fw-medium"></p>
+                <p id="levelExpected" class="fw-medium"></p>
             </div>
-        </header>
+        </div>
   
-        <main class="mb-4">
-            <!-- Card de Nível -->
-            <div class="card bg-body-tertiary mb-4 shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title"><span class="text-accent" id="levelTitle">Nível ?</span></h2>
-                    <p id="levelDescription" class="card-subtitle mb-3 text-body-secondary"></p>
-                    <p class="mb-1 fw-medium" id="levelCommand"></p>
-                    <p id="levelExpected" class="mb-1 fw-medium"></p>
-                </div>
-            </div>
-  
-            <!-- Editor -->
-            <div class="codemirror-container shadow-sm mb-4">
-                <textarea id="code" class="editor" aria-label="Editor de Código Python Colaborativo" aria-describedby="levelDescription">
+        <!-- Editor -->
+        <div class="codemirror-container shadow-sm">
+             <textarea id="code" class="editor" aria-label="Editor de Código Python" aria-describedby="levelDescription">
 # Comece a codar aqui...
-                </textarea>
+             </textarea>
+        </div>
+  
+        <!-- Status de Turno -->
+        <div id="gameStatusArea" class="d-flex align-items-center gap-3 bg-body-tertiary p-2 rounded shadow-sm mb-4">
+            <span id="currentPlayerIndicator" class="fw-bold" title="Jogador atual">Carregando...</span>
+            <div class="progress flex-grow-1" role="progressbar" aria-label="Tempo restante do turno" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" id="turnTimerProgressContainer">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" id="turnTimerProgress" style="width: 100%"></div>
             </div>
+            <span id="turnTimeDisplay" class="text-body-secondary" title="Tempo restante">--:--</span>
+            <button type="button" id="passTurnButton" class="btn btn-secondary btn-sm" title="Passar a Vez">
+                 <i data-feather="fast-forward"></i>
+                 <span class="visually-hidden">Passar a Vez</span>
+            </button>
+        </div>
   
-            <!-- Status do Jogo -->
-            <div id="gameStatusArea" class="d-flex align-items-center gap-3 bg-body-tertiary p-2 rounded shadow-sm mb-4">
-                <span id="currentPlayerIndicator" class="fw-bold" title="Jogador atual">Carregando...</span>
-                <div class="progress flex-grow-1" role="progressbar" aria-label="Tempo restante do turno" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" id="turnTimerProgressContainer">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="turnTimerProgress" style="width: 100%"></div>
-                </div>
-                <span id="turnTimeDisplay" class="text-body-secondary" title="Tempo restante">--:--</span>
-                <button type="button" id="passTurnButton" class="btn btn-secondary btn-sm flex-shrink-0" title="Passar a Vez">
-                    <i data-feather="fast-forward"></i>
-                    <span class="visually-hidden">Passar a Vez</span>
-                </button>
-            </div>
+        <!-- Botões de Controle -->
+        <div class="d-flex justify-content-between mb-4">
+            <button type="button" id="resetButton" class="btn btn-danger flex-fill" title="Resetar código e turno">
+                <i data-feather="trash-2" class="me-1"></i> Resetar
+            </button>
+            <button type="button" id="runButton" class="btn btn-success flex-fill" title="Executar o código (simulação)">
+                <i data-feather="play" class="me-1"></i> Run
+            </button>
+            <button type="button" id="sendButton" class="btn btn-accent flex-fill" title="Enviar código para validação">
+                <i data-feather="send" class="me-1"></i> Enviar
+            </button>
+        </div>
   
-            <!-- Botões de Controle -->
-            <div class="d-flex justify-content-between gap-2 gap-md-3 mb-4">
-                <button type="button" id="resetButton" class="btn btn-danger flex-fill" title="Resetar código e turno">
-                    <i data-feather="trash-2" class="me-1"></i> Resetar
-                </button>
-                <button type="button" id="runButton" class="btn btn-success flex-fill" title="Executar o código (simulação)">
-                    <i data-feather="play" class="me-1"></i> Run
-                </button>
-                <button type="button" id="sendButton" class="btn btn-accent flex-fill" title="Enviar código para validação">
-                    <i data-feather="send" class="me-1"></i> Enviar
-                </button>
-            </div>
+        <!-- Output -->
+        <div id="output" class="output-block" role="log" aria-live="polite">
+            A saída do seu código aparecerá aqui...
+        </div>
+    </main>
   
-            <!-- Output -->
-            <div id="output" class="output-block" role="log" aria-live="polite">A saída do seu código aparecerá aqui...</div>
-        </main>
-  
-        <footer class="mt-auto p-3 text-center text-body-secondary border-top">
-            GitGame &copy; <span id="currentYear"></span>
-        </footer>
-    </div>
+    <footer class="mt-auto p-3 text-center border-top text-body-secondary">
+        GitGame &copy; <span id="currentYear"></span>
+    </footer>
   
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -139,56 +134,89 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Inicializa Feather e Waves
-            try { feather.replace(); } catch (e) { console.error(e); }
-            try { Waves.init(); Waves.attach(".btn", ["waves-light"]); } catch (e) { console.error(e); }
+            // --- Lobby e Configuração da Sala ---
+            const lobbyForm = document.getElementById("lobbyForm");
+            const roomNameInput = document.getElementById("roomName");
+            const roomPasswordInput = document.getElementById("roomPassword");
+            const playerNameInput = document.getElementById("playerName");
+            const isHostCheckbox = document.getElementById("isHost");
+            const hostOptionsDiv = document.getElementById("hostOptions");
   
-            // Elementos de lobby
-            const lobby = document.getElementById("lobby");
-            const createRoomForm = document.getElementById("createRoomForm");
-            const joinRoomForm = document.getElementById("joinRoomForm");
-            const lobbyError = document.getElementById("lobbyError");
+            isHostCheckbox.addEventListener("change", function () {
+                hostOptionsDiv.style.display = this.checked ? "block" : "none";
+            });
   
-            // Elementos do jogo
-            const gameArea = document.getElementById("gameArea");
-            const levelTitle = document.getElementById("levelTitle");
-            const levelDescription = document.getElementById("levelDescription");
-            const levelCommand = document.getElementById("levelCommand");
-            const levelExpected = document.getElementById("levelExpected");
-            const outputDiv = document.getElementById("output");
+            lobbyForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const roomName = roomNameInput.value.trim();
+                const roomPassword = roomPasswordInput.value;
+                const playerName = playerNameInput.value.trim();
+                const isHost = isHostCheckbox.checked;
+                const turnTime = document.getElementById("turnTime").value;
+  
+                if (isHost) {
+                    // Cria a sala via API REST
+                    fetch("/createRoom", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ roomName, password: roomPassword, hostName: playerName, turnTime })
+                    }).then(response => response.json())
+                      .then(data => {
+                          if (data.message) {
+                              joinRoom(roomName, playerName);
+                          }
+                      }).catch(err => alert("Erro ao criar sala: " + err));
+                } else {
+                    joinRoom(roomName, playerName);
+                }
+            });
+  
+            // Conecta à sala via Socket.io e esconde o lobby
+            function joinRoom(roomName, playerName) {
+                socket.emit("joinRoomSocket", { roomName, playerName });
+                document.getElementById("lobbyArea").style.display = "none";
+                document.getElementById("gameArea").style.display = "block";
+            }
+  
+            // --- Inicialização do Editor CodeMirror ---
+            let editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+                mode: "python",
+                theme: "darcula",
+                lineNumbers: true,
+                indentUnit: 4,
+                tabSize: 4,
+                matchBrackets: true,
+                styleActiveLine: true,
+                autofocus: true,
+                readOnly: "nocursor"
+            });
+  
+            // Seletores da UI do jogo
             const currentPlayerIndicator = document.getElementById("currentPlayerIndicator");
             const turnTimerProgress = document.getElementById("turnTimerProgress");
             const turnTimeDisplay = document.getElementById("turnTimeDisplay");
             const passTurnButton = document.getElementById("passTurnButton");
-            const resetButton = document.getElementById("resetButton");
             const runButton = document.getElementById("runButton");
+            const resetButton = document.getElementById("resetButton");
             const sendButton = document.getElementById("sendButton");
+            const outputDiv = document.getElementById("output");
+            const levelTitle = document.getElementById("levelTitle");
+            const levelDescription = document.getElementById("levelDescription");
+            const levelCommand = document.getElementById("levelCommand");
+            const levelExpected = document.getElementById("levelExpected");
             const yearSpan = document.getElementById("currentYear");
   
-            // Variáveis para o editor e informações do jogador/sala
-            let editor;
             let myID = null;
             let currentTurnID = null;
-            let currentRoom = null;
-  
-            // Inicializa CodeMirror
-            editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-                mode: "python", theme: "darcula", lineNumbers: true,
-                indentUnit: 4, tabSize: 4, matchBrackets: true, styleActiveLine: true,
-                autofocus: true, readOnly: "nocursor"
-            });
+            let turnTimeRemaining = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--turn-time-total'));
   
             const socket = io();
   
-            socket.on('yourID', id => { myID = id; });
+            // Recebe seu ID
+            socket.on("yourID", id => { myID = id; });
   
-            // Tratamento de erros de sala
-            socket.on('roomError', data => {
-                lobbyError.textContent = data.message;
-            });
-  
-            // Atualiza o estado do jogo ao entrar na sala
-            socket.on('stateUpdate', state => {
+            // Atualiza o estado da sala
+            socket.on("stateUpdate", state => {
                 editor.setValue(state.currentCode);
                 levelTitle.textContent = "Nível " + state.currentLevel.id;
                 levelDescription.textContent = state.currentLevel.context;
@@ -202,8 +230,8 @@
                 outputDiv.textContent = "";
             });
   
-            // Atualiza código colaborativo
-            socket.on('codeUpdate', newCode => {
+            // Atualiza o código colaborativo
+            socket.on("codeUpdate", newCode => {
                 const current = editor.getValue();
                 if (current !== newCode) {
                     const cursor = editor.getCursor();
@@ -212,12 +240,20 @@
                 }
             });
   
-            // Atualiza o cronômetro global se necessário (opcional)
-            socket.on('globalTimerUpdate', elapsed => { /* pode ser implementado se desejado */ });
-            socket.on('globalTimerReset', () => { /* pode ser implementado se desejado */ });
+            // Atualiza o cronômetro do turno (recebido do servidor)
+            socket.on("turnTimerUpdate", remaining => {
+                turnTimeRemaining = remaining;
+                turnTimeDisplay.textContent = new Date(remaining * 1000).toISOString().substr(14, 5);
+                let percentage = (remaining / parseInt(getComputedStyle(document.documentElement).getPropertyValue('--turn-time-total'))) * 100;
+                turnTimerProgress.style.width = percentage + "%";
+                turnTimerProgress.classList.remove("bg-success", "bg-warning", "bg-danger");
+                if (percentage > 50) turnTimerProgress.classList.add("bg-success");
+                else if (percentage > 20) turnTimerProgress.classList.add("bg-warning");
+                else turnTimerProgress.classList.add("bg-danger");
+            });
   
-            // Atualiza o turno
-            socket.on('turnUpdate', turnID => {
+            // Atualiza o turno: o servidor envia o ID do jogador com a vez
+            socket.on("turnUpdate", turnID => {
                 currentTurnID = turnID;
                 if (myID === turnID) {
                     currentPlayerIndicator.textContent = "Sua vez!";
@@ -234,18 +270,7 @@
                 }
             });
   
-            // Atualiza o cronômetro de turno (recebido do servidor)
-            socket.on('turnTimerUpdate', remaining => {
-                turnTimeDisplay.textContent = new Date(remaining * 1000).toISOString().substr(14, 5);
-                const percentage = (remaining / parseInt(getComputedStyle(document.documentElement).getPropertyValue('--turn-time-total'))) * 100;
-                turnTimerProgress.style.width = percentage + "%";
-                turnTimerProgress.classList.remove("bg-success", "bg-warning", "bg-danger");
-                if (percentage > 50) turnTimerProgress.classList.add("bg-success");
-                else if (percentage > 20) turnTimerProgress.classList.add("bg-warning");
-                else turnTimerProgress.classList.add("bg-danger");
-            });
-  
-            // Envia atualizações do editor (debounce)
+            // Envia atualizações do editor (apenas se for sua vez)
             function debounce(func, delay) {
                 let timeout;
                 return function(...args) {
@@ -256,69 +281,48 @@
   
             editor.on("change", debounce(() => {
                 if (myID === currentTurnID) {
-                    socket.emit('codeUpdate', { roomName: currentRoom, newCode: editor.getValue() });
+                    socket.emit("codeUpdate", editor.getValue());
                 }
             }, 300));
   
             // Botões de controle
             passTurnButton.addEventListener("click", () => {
-                if (myID === currentTurnID) socket.emit('passTurn', { roomName: currentRoom });
+                if (myID === currentTurnID) socket.emit("passTurn");
             });
+  
             resetButton.addEventListener("click", () => {
-                if (confirm("Resetar código e turno?")) socket.emit('resetGame', { roomName: currentRoom });
+                if (confirm("Resetar código e turno?")) {
+                    socket.emit("resetGame");
+                }
             });
+  
             runButton.addEventListener("click", () => {
+                // Execução local simulada para visualização
                 outputDiv.textContent = "Saída simulada:\n" + editor.getValue();
                 outputDiv.className = "output-block";
             });
+  
             sendButton.addEventListener("click", () => {
                 outputDiv.textContent = "Processando...";
-                socket.emit('submitCode', { roomName: currentRoom });
+                socket.emit("submitCode");
             });
   
-            socket.on('submissionResult', result => {
+            socket.on("submissionResult", result => {
                 outputDiv.textContent = result.message;
                 outputDiv.className = "output-block " + (result.success ? "success" : "error");
             });
   
-            socket.on('gameComplete', message => {
+            socket.on("gameComplete", message => {
                 alert(message);
                 editor.setValue("");
-            });
-  
-            socket.on('roomUpdate', data => {
-                // Pode-se atualizar uma lista de jogadores na sala, se desejar
-                console.log("Atualização da sala:", data);
             });
   
             // Atualiza o ano no rodapé
             yearSpan.textContent = new Date().getFullYear();
   
-            // Formulários do Lobby
-            createRoomForm.addEventListener("submit", function(e) {
-                e.preventDefault();
-                const roomName = document.getElementById("createRoomName").value.trim();
-                const password = document.getElementById("createRoomPassword").value.trim();
-                const hostName = document.getElementById("hostName").value.trim();
-                const turnTime = document.getElementById("turnTime").value.trim();
-                if (!roomName || !hostName || !turnTime) return;
-                socket.emit('createRoom', { roomName, password, hostName, turnTime });
-                currentRoom = roomName;
-                lobby.classList.add("d-none");
-                gameArea.classList.remove("d-none");
-            });
-  
-            joinRoomForm.addEventListener("submit", function(e) {
-                e.preventDefault();
-                const roomName = document.getElementById("joinRoomName").value.trim();
-                const password = document.getElementById("joinRoomPassword").value.trim();
-                const playerName = document.getElementById("playerName").value.trim();
-                if (!roomName || !playerName) return;
-                socket.emit('joinRoom', { roomName, password, playerName });
-                currentRoom = roomName;
-                lobby.classList.add("d-none");
-                gameArea.classList.remove("d-none");
-            });
+            // Inicializa Feather e Waves
+            try { feather.replace(); } catch (e) { console.error(e); }
+            try { Waves.init(); Waves.attach(".btn", ["waves-light"]); } catch (e) { console.error(e); }
         });
     </script>
 </body>
