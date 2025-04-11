@@ -12,7 +12,7 @@ const io = require('socket.io')(server);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Carrega os níveis (apenas 5 níveis desafiadores)
+// Carrega os níveis (5 níveis desafiadores)
 let levels;
 try {
   levels = JSON.parse(fs.readFileSync('levels.json', 'utf8')).levels;
@@ -24,46 +24,57 @@ try {
 // Estado global do jogo
 let currentLevelIndex = 0;
 let currentLevel = levels[currentLevelIndex];
-let currentCode = ""; // Código colaborativo compartilhado
+let currentCode = ""; // código colaborativo atual
 let levelStartTime = Date.now();
 
-// Se o nível requer inputs para a função init(), escolhe aleatoriamente um par input/output
+// Se o nível usa inputs para a função init, escolhe um par aleatório
 if (currentLevel.inputs) {
   const idx = Math.floor(Math.random() * currentLevel.inputs.length);
   currentLevel.chosenInput = currentLevel.inputs[idx];
   currentLevel.chosenExpectedOutput = currentLevel.expectedOutputs[idx];
 }
 
-// --- Lógica de Turnos ---
-const TURN_TIME = 60; // 60 segundos por turno
-let players = []; // IDs dos jogadores conectados
+// ----- Lógica de Turnos (servidor controla o cronômetro do turno) -----
+const TURN_TIME = 60; // segundos por turno
+let players = []; // Array de socket.id dos jogadores conectados
 let currentTurnIndex = 0;
-let turnTimer = null;
+let turnStartTime = Date.now();
+let turnInterval = null;
 
-function startTurn() {
-  if (players.length > 0) {
-    currentTurnIndex = currentTurnIndex % players.length;
-    const currentTurnID = players[currentTurnIndex];
-    io.emit('turnUpdate', currentTurnID);
-    if (turnTimer) clearTimeout(turnTimer);
-    turnTimer = setTimeout(() => {
-      nextTurn();
-    }, TURN_TIME * 1000);
-  }
+// Função que envia o tempo restante do turno a cada segundo
+function broadcastTurnTimer() {
+  const elapsed = Math.floor((Date.now() - turnStartTime) / 1000);
+  const remaining = Math.max(0, TURN_TIME - elapsed);
+  io.emit('turnTimerUpdate', remaining);
+  if (remaining <= 0) nextTurn();
 }
 
+// Inicia o turno do jogador atual
+function startTurn() {
+  if (players.length === 0) return;
+  currentTurnIndex = currentTurnIndex % players.length;
+  const currentTurnID = players[currentTurnIndex];
+  turnStartTime = Date.now();
+  io.emit('turnUpdate', currentTurnID);
+  // Inicia o intervalo do cronômetro de turno
+  if (turnInterval) clearInterval(turnInterval);
+  turnInterval = setInterval(broadcastTurnTimer, 1000);
+}
+
+// Passa a vez para o próximo jogador
 function nextTurn() {
+  if (players.length === 0) return;
   currentTurnIndex = (currentTurnIndex + 1) % players.length;
   startTurn();
 }
 
-// --- Cronômetro Global do Nível ---
+// Cronômetro global do nível (enviado a cada segundo)
 setInterval(() => {
   const elapsed = Date.now() - levelStartTime;
-  io.emit('timerUpdate', elapsed);
+  io.emit('globalTimerUpdate', elapsed);
 }, 1000);
 
-// Função de verificação do output (compara tipo e valor)
+// Função para verificação rigorosa do output
 function verifyOutput(output, expectedType, expectedValue) {
   if (expectedType === "number") {
     const num = Number(output);
@@ -80,26 +91,27 @@ function verifyOutput(output, expectedType, expectedValue) {
   }
 }
 
-// Socket.io: gerencia conexão, turnos, colaboração e submissões
+// Socket.io: gerencia conexões, colaboração, turnos e submissões
 io.on('connection', socket => {
   console.log("Cliente conectado:", socket.id);
-  // Envia o seu ID para o cliente
+  
+  // Envia o ID do cliente para uso local
   socket.emit('yourID', socket.id);
   
-  // Adiciona o jogador à lista (caso não esteja)
+  // Adiciona o jogador se ainda não estiver na lista
   if (!players.includes(socket.id)) {
     players.push(socket.id);
-    if (players.length === 1) startTurn(); // Se for o primeiro, inicia o turno
+    if (players.length === 1) startTurn();
   }
   
-  // Envia o estado atual (código, nível, tempo) para o novo cliente
+  // Envia estado completo (código, nível, tempo global) ao novo cliente
   socket.emit('stateUpdate', {
     currentCode,
     currentLevel,
-    elapsedTime: Date.now() - levelStartTime
+    globalElapsed: Date.now() - levelStartTime
   });
   
-  // Recebe atualizações do código (somente se for a vez do jogador)
+  // Atualização colaborativa: só o jogador da vez pode alterar o código
   socket.on('codeUpdate', newCode => {
     const currentTurnID = players[currentTurnIndex];
     if (socket.id === currentTurnID) {
@@ -108,26 +120,24 @@ io.on('connection', socket => {
     }
   });
   
-  // Evento para passar a vez manualmente
+  // Permite ao jogador da vez passar a vez manualmente
   socket.on('passTurn', () => {
     const currentTurnID = players[currentTurnIndex];
-    if (socket.id === currentTurnID) {
-      nextTurn();
-    }
+    if (socket.id === currentTurnID) nextTurn();
   });
   
-  // Evento para reset: reinicia o código e o cronômetro do nível
+  // Reset do nível: reinicia código e cronômetro global
   socket.on('resetGame', () => {
     currentCode = "";
     levelStartTime = Date.now();
     io.emit('codeUpdate', currentCode);
-    io.emit('timerReset');
+    io.emit('globalTimerReset');
   });
   
-  // Submissão do código para validação
+  // Submissão do código: o servidor executa o código e verifica a saída
   socket.on('submitCode', () => {
     let codeToRun = currentCode;
-    // Se o nível utiliza a função init com inputs, insere a chamada com o input escolhido
+    // Se o nível usa inputs para a função init(), insere a chamada com o input escolhido
     if (currentLevel.inputs) {
       if (!currentLevel.chosenInput) {
         const idx = Math.floor(Math.random() * currentLevel.inputs.length);
@@ -137,7 +147,6 @@ io.on('connection', socket => {
       const args = currentLevel.chosenInput.join(", ");
       codeToRun += `\nprint(init(${args}))`;
     }
-    
     const tempFile = `temp_${uuidv4()}.py`;
     fs.writeFileSync(tempFile, codeToRun);
     exec(`python3 ${tempFile}`, { timeout: 5000 }, (error, stdout, stderr) => {
@@ -149,10 +158,11 @@ io.on('connection', socket => {
         const expected = currentLevel.inputs ? currentLevel.chosenExpectedOutput : currentLevel.expectedValue;
         if (verifyOutput(output, currentLevel.expectedType, expected)) {
           const timeTaken = Date.now() - levelStartTime;
-          // Exemplo de score: pontuação baseada em tempo e tamanho do código
-          const score = Math.max(0, Math.floor(10000 - timeTaken/10 - currentCode.length));
+          const codeLength = currentCode.length;
+          // Score: quanto mais rápido e conciso, maior o score (exemplo simples)
+          const score = Math.max(0, Math.floor(10000 - timeTaken / 10 - codeLength));
           io.emit('submissionResult', { success: true, message: `Nível ${currentLevel.id} completado em ${(timeTaken/1000).toFixed(1)}s! Score: ${score}` });
-          // Avança para o próximo nível se houver
+          // Avança para o próximo nível ou finaliza o jogo
           if (currentLevelIndex < levels.length - 1) {
             currentLevelIndex++;
             currentLevel = levels[currentLevelIndex];
@@ -166,7 +176,7 @@ io.on('connection', socket => {
             io.emit('stateUpdate', {
               currentCode,
               currentLevel,
-              elapsedTime: 0
+              globalElapsed: 0
             });
           } else {
             io.emit('gameComplete', "Parabéns, todos os níveis foram completados!");
@@ -178,11 +188,15 @@ io.on('connection', socket => {
     });
   });
   
+  // Em caso de desconexão, remove o jogador e ajusta o turno
   socket.on('disconnect', () => {
     console.log("Cliente desconectado:", socket.id);
     players = players.filter(id => id !== socket.id);
-    if (players.length === 0 && turnTimer) clearTimeout(turnTimer);
-    else if (socket.id === players[currentTurnIndex]) nextTurn();
+    if (players.length === 0) {
+      if (turnInterval) clearInterval(turnInterval);
+    } else if (socket.id === players[currentTurnIndex]) {
+      nextTurn();
+    }
   });
 });
 
