@@ -1,43 +1,49 @@
 {
-  "levels": [
-    {
-      "id": 1,
-      "context": "Seu primeiro desafio: crie uma função simples que imprima 'Hello World!'",
-      "command": "Crie uma função main() que imprima exatamente 'Hello World!'",
-      "expectedType": "string",
-      "expectedValue": "Hello World!"
-    },
-    {
-      "id": 2,
-      "context": "Soma em dupla: desenvolva uma função que some dois números.",
-      "command": "Crie uma função init(a, b) que retorne a soma de a e b. O nível define 5 pares de entrada e a saída deverá ser a soma correspondente.",
-      "expectedType": "number",
-      "inputs": [[1, 1], [2, 3], [5, 7], [10, 20], [8, 4]],
-      "expectedOutputs": [2, 5, 12, 30, 12]
-    },
-    {
-      "id": 3,
-      "context": "Fatorial: escreva uma função que calcule o fatorial de um número.",
-      "command": "Crie uma função init(n) que retorne o fatorial de n. O nível fornecerá 5 valores de entrada distintos.",
-      "expectedType": "number",
-      "inputs": [[3], [4], [5], [6], [7]],
-      "expectedOutputs": [6, 24, 120, 720, 5040]
-    },
-    {
-      "id": 4,
-      "context": "Inversão de string: desenvolva uma função que inverta uma string.",
-      "command": "Crie uma função init(s) que retorne a string s invertida. O nível fornecerá 5 strings diferentes.",
-      "expectedType": "string",
-      "inputs": [["apple"], ["GitGame"], ["Python"], ["racecar"], ["desserts"]],
-      "expectedOutputs": ["elppa", "emaGit", "nohtyP", "racecar", "stressed"]
-    },
-    {
-      "id": 5,
-      "context": "Palíndromo: verifique se uma string é palíndroma.",
-      "command": "Crie uma função init(s) que retorne True se s for um palíndromo (desconsiderando diferenças de maiúsculas/minúsculas) e False caso contrário. O nível fornecerá 5 strings.",
-      "expectedType": "boolean",
-      "inputs": [["Radar"], ["Hello"], ["Level"], ["World"], ["Madam"]],
-      "expectedOutputs": [true, false, true, false, true]
-    }
-  ]
+    "levels": [
+        {
+            "id": 1,
+            "context": "Seu primeiro desafio é simples: exiba 'Hello World!'",
+            "command": "Crie uma função main() que imprima exatamente 'Hello World!'",
+            "expectedType": "string",
+            "expectedValue": "Hello World!"
+        },
+        {
+            "id": 2,
+            "context": "Soma: desenvolva uma função que some dois números.",
+            "command": "Crie uma função test(a, b) que retorne a soma de a e b. O nível define 5 pares de entrada; a saída deverá ser a soma correspondente.",
+            "expectedType": "number",
+            "inputs": [
+                [1, 1],
+                [2, 3],
+                [5, 7],
+                [10, 20],
+                [8, 4]
+            ],
+            "expectedOutputs": [2, 5, 12, 30, 12]
+        },
+        {
+            "id": 3,
+            "context": "Fatorial: calcule o fatorial de um número.",
+            "command": "Crie uma função test(n) que retorne o fatorial de n. O nível fornece 5 valores de entrada.",
+            "expectedType": "number",
+            "inputs": [[3], [4], [5], [6], [7]],
+            "expectedOutputs": [6, 24, 120, 720, 5040]
+        },
+        {
+            "id": 4,
+            "context": "Inversão de string: retorne a string invertida.",
+            "command": "Crie uma função test(s) que retorne a string s invertida. O nível fornece 5 strings.",
+            "expectedType": "string",
+            "inputs": [["apple"], ["GitGame"], ["Python"], ["racecar"], ["desserts"]],
+            "expectedOutputs": ["elppa", "emaGit", "nohtyP", "racecar", "stressed"]
+        },
+        {
+            "id": 5,
+            "context": "Palíndromo: verifique se uma string é palíndroma.",
+            "command": "Crie uma função test(s) que retorne True se s for palíndromo (ignorando maiúsculas/minúsculas) e False caso contrário. O nível fornece 5 strings.",
+            "expectedType": "boolean",
+            "inputs": [["Radar"], ["Hello"], ["Level"], ["World"], ["Madam"]],
+            "expectedOutputs": [true, false, true, false, true]
+        }
+    ]
 }
