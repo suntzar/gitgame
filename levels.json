@@ -1,49 +1,48 @@
 {
-    "levels": [
-        {
-            "id": 1,
-            "context": "Desafio Inicial: Mostre a mensagem 'Hello World!'",
-            "command": "Crie uma função main() que imprima exatamente 'Hello World!'",
-            "expectedType": "string",
-            "expectedValue": "Hello World!"
-        },
-        {
-            "id": 2,
-            "context": "Soma: Crie uma função test(a, b) que retorne a soma de a e b.",
-            "command": "Crie uma função test(a, b) que retorne a soma de a e b. O nível define 5 pares de entrada e a saída deve ser a soma correspondente.",
-            "expectedType": "number",
-            "inputs": [
-                [1, 1],
-                [2, 3],
-                [5, 7],
-                [10, 20],
-                [8, 4]
-            ],
-            "expectedOutputs": [2, 5, 12, 30, 12]
-        },
-        {
-            "id": 3,
-            "context": "Fatorial: Calcule o fatorial de um número.",
-            "command": "Crie uma função test(n) que retorne o fatorial de n. O nível fornece 5 valores de entrada.",
-            "expectedType": "number",
-            "inputs": [[3], [4], [5], [6], [7]],
-            "expectedOutputs": [6, 24, 120, 720, 5040]
-        },
-        {
-            "id": 4,
-            "context": "Inversão de String: Retorne a string invertida.",
-            "command": "Crie uma função test(s) que retorne a string s invertida. O nível fornece 5 strings.",
-            "expectedType": "string",
-            "inputs": [["apple"], ["GitGame"], ["Python"], ["racecar"], ["desserts"]],
-            "expectedOutputs": ["elppa", "emaGit", "nohtyP", "racecar", "stressed"]
-        },
-        {
-            "id": 5,
-            "context": "Palíndromo: Verifique se a string é palíndroma.",
-            "command": "Crie uma função test(s) que retorne True se s for palíndromo (ignorando maiúsculas/minúsculas) e False caso contrário. O nível fornece 5 strings.",
-            "expectedType": "boolean",
-            "inputs": [["Radar"], ["Hello"], ["Level"], ["World"], ["Madam"]],
-            "expectedOutputs": [true, false, true, false, true]
-        }
-    ]
+  "levels": [
+    {
+      "id": 1,
+      "context": "Seu primeiro desafio é simples: mostre a mensagem 'Hello World!'.",
+      "command": "Crie uma função main() que imprima exatamente 'Hello World!' na saída padrão.",
+      "initialCode": "def main():\n  # Seu código aqui\n  print(\"...\")\n\n# Linha necessária para executar main() se o script for rodado diretamente\n# O servidor pode ou não adicionar isso dependendo da configuração\n# if __name__ == \"__main__\":\n#     main()",
+      "expectedType": "string",
+      "expectedValue": "Hello World!"
+    },
+    {
+      "id": 2,
+      "context": "Soma: crie uma função que some dois números.",
+      "command": "Crie uma função init(a, b) que retorne a soma de a e b.",
+      "initialCode": "def init(a, b):\n  # Retorne a soma de a e b\n  return 0",
+      "expectedType": "number",
+      "inputs": [[1, 1], [2, 3], [5, 7], [10, 20], [8, 4]],
+      "expectedOutputs": [2, 5, 12, 30, 12]
+    },
+    {
+      "id": 3,
+      "context": "Fatorial: calcule o fatorial de um número.",
+      "command": "Crie uma função init(n) que retorne o fatorial de n (para n >= 0).",
+      "initialCode": "def init(n):\n  # Retorne o fatorial de n\n  if n == 0:\n    return 1\n  else:\n    # Adicione a lógica recursiva ou iterativa\n    return n # Placeholder\n",
+      "expectedType": "number",
+      "inputs": [[0], [3], [4], [5], [6], [7]],
+      "expectedOutputs": [1, 6, 24, 120, 720, 5040]
+    },
+    {
+      "id": 4,
+      "context": "Inversão de string: retorne a string invertida.",
+      "command": "Crie uma função init(s) que retorne a string s invertida.",
+      "initialCode": "def init(s):\n  # Retorne a string s invertida\n  return \"\"",
+      "expectedType": "string",
+      "inputs": [["apple"], ["GitGame"], ["Python"], ["racecar"], ["desserts"]],
+      "expectedOutputs": ["elppa", "emaGit", "nohtyP", "racecar", "stressed"]
+    },
+    {
+      "id": 5,
+      "context": "Palíndromo: verifique se uma string é palíndroma.",
+      "command": "Crie uma função init(s) que retorne True se s for palíndromo (ignorando maiúsculas/minúsculas e espaços) e False caso contrário.",
+      "initialCode": "def init(s):\n  # Processa a string (minúsculas, sem espaços)\n  processed_s = ''.join(filter(str.isalnum, s)).lower()\n  # Verifique se é palíndromo\n  return False # Placeholder",
+      "expectedType": "boolean",
+      "inputs": [["Radar"], ["Hello"], ["Level"], ["A man a plan a canal Panama"], ["Was it a car or a cat I saw"], ["World"], ["Madam"]],
+      "expectedOutputs": [true, false, true, true, true, false, true]
+    }
+  ]
 }

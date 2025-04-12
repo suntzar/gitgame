@@ -3,327 +3,897 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GitGame - Lobby</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/darcula.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/node-waves/0.7.6/waves.min.css" />
+    <title>GitGame Multiplayer</title>
+
+    <!-- Favicon (Exemplo - Crie ou use um gerador) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+
+    <!-- Bibliotecas CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css" integrity="sha512-uf06llspW44/LZpqsXHQ21iyRytRECIHfMruDv3++Xqw4tr1rWHg4Mec/HQnDUkeWQ/HOLGWf4VKU/nXfSjs1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/darcula.min.css" integrity="sha512-mTABbLxKt0yr7Mlp9PGIxRryJjuUs+7yEw+I0jSxuJq+UAkHw8lBwPTrj/L5U76p5t+xQDBC+WqznV39rWApIA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/node-waves/0.7.6/waves.min.css" integrity="sha512-ftcmZfZL06Q9vsUf6+p7Z8X+Y8+JZ6JVTU5oqzJvRkFvH5XWb/5rBCcpT0Gy77+90B8E/qcGzLg08TTrM/yCdw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Ícones Feather (via JS) -->
+    <script src="https://unpkg.com/feather-icons"></script>
+
     <style>
-        /* Estilos gerais baseados no template fornecido */
+        /* ==========================================================================
+           1. VARIÁVEIS E CONFIGURAÇÕES GLOBAIS
+           ========================================================================== */
         :root {
-            --tp-accent: #e56700;
+            --tp-accent: #e56700; /* Laranja TP */
             --tp-accent-hover: #fca34d;
             --tp-accent-rgb: 229, 103, 0;
-            --turn-time-total: 60;
+            --turn-time-total: 60; /* Deve corresponder ao TURN_TIME do servidor */
+            --section-transition: opacity 0.3s ease-in-out; /* Suave transição entre seções */
         }
-        body { display: flex; flex-direction: column; min-height: 100vh; }
-        main { flex-grow: 1; }
-        .header-title { margin: 0; font-size: 1.8rem; font-weight: 600; }
+
+        /* ==========================================================================
+           2. ESTILOS DE BASE E LAYOUT
+           ========================================================================== */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--bs-dark-bg-subtle, #212529); /* Fundo ligeiramente diferente do padrão */
+        }
+        main {
+            flex-grow: 1;
+        }
+        .section-container { /* Controla a visibilidade das seções */
+             display: none; /* Começam escondidas */
+             opacity: 0;
+             transition: var(--section-transition);
+        }
+        .section-container.active {
+            display: block;
+            opacity: 1;
+        }
+        .header-area {
+             background-color: var(--bs-body-bg); /* Cor de fundo do header */
+        }
+        .footer-area {
+             background-color: var(--bs-body-bg);
+             font-size: 0.9em;
+        }
+
+
+        /* ==========================================================================
+           3. TIPOGRAFIA E ELEMENTOS DE TEXTO
+           ========================================================================== */
+        .header-title { margin: 0; font-size: 1.7rem; font-weight: 600; }
         .header-title .git-part { color: var(--tp-accent); }
-        .output-block { font-family: monospace; font-size: 0.9rem; background-color: #343a40; color: #ced4da; padding: 1rem; border-radius: 0.25rem; margin-top: 1.5rem; white-space: pre-wrap; border: 1px solid #495057; }
-        .output-block.success { color: #198754; border-left: 4px solid #198754; background-color: rgba(25,135,84,0.1); }
-        .output-block.error { color: #dc3545; border-left: 4px solid #dc3545; background-color: rgba(220,53,69,0.1); }
-        .btn-accent { --bs-btn-color: #fff; --bs-btn-bg: var(--tp-accent); --bs-btn-border-color: var(--tp-accent); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--tp-accent-hover); --bs-btn-hover-border-color: var(--tp-accent-hover); --bs-btn-focus-shadow-rgb: var(--tp-accent-rgb); --bs-btn-active-color: #fff; --bs-btn-active-bg: var(--tp-accent-hover); --bs-btn-active-border-color: var(--tp-accent-hover); }
-        .codemirror-container { padding: 0; overflow: hidden; border: 1px solid #495057; border-radius: 0.25rem; margin-bottom: 1rem; background-color: #343a40; }
-        .CodeMirror { border: none; border-radius: inherit; }
-        .cm-s-darcula { background-color: #2b2b2b; color: #a9b7c6; font-family: monospace; font-size: 0.95rem; }
+        .header-title small { font-size: 0.7em; vertical-align: middle; }
+
+        /* Título do Card com borda accent */
+        h2.level-card-title {
+            font-weight: 600;
+            border-left: 4px solid var(--tp-accent);
+            padding-left: 0.8rem;
+            margin-bottom: 1rem;
+            margin-top: 0;
+            font-size: 1.4rem;
+        }
+        /* Elemento Accent */
+        accent, .text-accent { color: var(--tp-accent); font-weight: 600; }
+
+        /* Blocos de código inline */
+        code:not(pre code) {
+            background-color: rgba(var(--bs-secondary-rgb), 0.2);
+            color: var(--bs-emphasis-color);
+            padding: 0.2em 0.4em;
+            border-radius: 0.25rem;
+            font-size: 85%;
+        }
+        /* Bloco de Output */
+        .output-block {
+            font-family: var(--bs-font-monospace);
+            font-size: 0.9rem;
+            background-color: var(--bs-tertiary-bg);
+            color: var(--bs-secondary-color);
+            padding: 1rem;
+            border-radius: var(--bs-border-radius);
+            margin-top: 1.5rem;
+            min-height: 80px;
+            white-space: pre-wrap; /* Mantem quebras de linha e espaços */
+            word-break: break-word; /* Quebra palavras longas */
+            border: 1px solid var(--bs-border-color);
+            transition: all 0.3s ease;
+            border-left-width: 4px; /* Espaço reservado para a borda colorida */
+            border-left-color: transparent; /* Começa transparente */
+        }
+        .output-block.info { color: var(--bs-info-text-emphasis); border-left-color: var(--bs-info); background-color: rgba(var(--bs-info-rgb), 0.1); }
+        .output-block.success { color: var(--bs-success-text-emphasis); border-left-color: var(--bs-success); background-color: rgba(var(--bs-success-rgb), 0.1); }
+        .output-block.error { color: var(--bs-danger-text-emphasis); border-left-color: var(--bs-danger); background-color: rgba(var(--bs-danger-rgb), 0.1); }
+        .output-block.warning { color: var(--bs-warning-text-emphasis); border-left-color: var(--bs-warning); background-color: rgba(var(--bs-warning-rgb), 0.1); }
+
+
+        /* ==========================================================================
+           4. COMPONENTES (Botões, Cards, Status, Editor, Lobby, etc.)
+           ========================================================================== */
+
+        /* --- Botões --- */
+        .btn-accent {
+            --bs-btn-color: #fff;
+            --bs-btn-bg: var(--tp-accent);
+            --bs-btn-border-color: var(--tp-accent);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-hover-bg: var(--tp-accent-hover);
+            --bs-btn-hover-border-color: var(--tp-accent-hover);
+            --bs-btn-focus-shadow-rgb: var(--tp-accent-rgb);
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: var(--tp-accent-hover);
+            --bs-btn-active-border-color: var(--tp-accent-hover);
+            --bs-btn-disabled-color: #fff;
+            --bs-btn-disabled-bg: #fd7e14; /* Laranja um pouco mais claro para desabilitado */
+            --bs-btn-disabled-border-color: #fd7e14;
+        }
+        .btn [data-feather] { width: 1em; height: 1em; vertical-align: -0.125em; margin-right: 0.3em; }
+        .btn-sm [data-feather] { width: 0.875em; height: 0.875em; }
+        .btn-lg [data-feather] { width: 1.1em; height: 1.1em; }
+        .btn-group-actions .btn { margin: 0 0.25rem; } /* Pequeno espaço entre botões */
+
+
+        /* --- Área de Status do Jogo --- */
+        #gameStatusArea {
+            background-color: var(--bs-body-tertiary); /* Fundo sutil */
+            border-radius: var(--bs-border-radius);
+            padding: 0.5rem 0.75rem; /* Padding interno */
+        }
+        #currentPlayerIndicator {
+            font-size: 0.9em;
+            font-weight: 600; /* Deixar em negrito */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px; /* Evitar que cresça demais */
+            transition: color 0.3s ease; /* Suavizar mudança de cor */
+        }
+        #currentPlayerIndicator.text-success { color: var(--bs-success) !important; } /* Forçar cor */
+        #currentPlayerIndicator.text-warning { color: var(--bs-warning) !important; } /* Forçar cor */
+
+        #turnTimerProgressContainer { min-width: 50px; }
+        #turnTimerProgress {
+            height: 0.8rem; /* Barra um pouco mais fina */
+            font-size: 0.7rem;
+            transition: width 0.3s ease-out, background-color 0.5s ease;
+            background-color: var(--bs-success); /* Cor base inicial */
+        }
+        #turnTimerProgress.bg-warning { background-color: var(--bs-warning) !important; }
+        #turnTimerProgress.bg-danger { background-color: var(--bs-danger) !important; }
+
+        #turnTimeDisplay {
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+            color: var(--bs-secondary-color); /* Cor mais suave */
+            min-width: 40px; /* Garantir espaço */
+            text-align: right;
+        }
+        #passTurnButton { /* Botão de passar a vez */
+            padding: 0.25rem 0.5rem; /* Menor padding */
+        }
+        #passTurnButton [data-feather] { margin-right: 0; } /* Remover margem do ícone */
+
+        /* --- Container do Editor CodeMirror --- */
+        .codemirror-container {
+            padding: 0 !important; /* Remover padding do container */
+            overflow: hidden;
+            border: 1px solid var(--bs-border-color);
+            border-radius: var(--bs-border-radius);
+            margin-bottom: 1rem;
+            background-color: #2b2b2b; /* Cor de fundo do tema Darcula */
+        }
+        .CodeMirror {
+            border: none; /* Remover borda interna do CM */
+            height: auto; /* Ajustar altura ao conteúdo, ou definir min-height */
+            min-height: 250px; /* Altura mínima */
+        }
+        .cm-s-darcula { /* Ajustes no tema Darcula */
+            background-color: #2b2b2b;
+            color: #a9b7c6;
+            font-family: var(--bs-font-monospace);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .cm-s-darcula .CodeMirror-gutters { background: #313335; border-right: 1px solid #313335; }
+        .cm-s-darcula .CodeMirror-matchingbracket { background-color: rgba(var(--tp-accent-rgb), 0.2); color: #fff !important; font-weight: bold; border-bottom: 1px solid var(--tp-accent); }
+        .cm-s-darcula .CodeMirror-nonmatchingbracket { background-color: rgba(var(--bs-danger-rgb), 0.2); color: var(--bs-danger) !important; }
+        .cm-s-darcula .CodeMirror-cursor { border-left: 1px solid #f8f8f0; }
+        .CodeMirror-focused .cm-activeLine, .cm-s-darcula .CodeMirror-activeline-background { background: rgba(255, 255, 255, 0.05); } /* Linha ativa mais sutil */
+
+        /* --- Seção do Lobby --- */
+        #lobbySection .card { margin-bottom: 1rem; }
+        #playerList .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bs-tertiary-bg); /* Fundo dos itens */
+            border-color: var(--bs-border-color-translucent);
+        }
+        #playerList .badge { font-size: 0.8em; padding: 0.3em 0.5em; }
+        #playerList .player-nickname { font-weight: 500; }
+        #lobbyStatus { font-style: italic; font-size: 0.9em;}
+
+        /* --- Seção de Fim de Jogo --- */
+        #gameOverSection {
+            background-color: var(--bs-body-tertiary);
+            padding: 2rem;
+            border-radius: var(--bs-border-radius);
+        }
+        #gameOverSection .icon-success { color: var(--bs-success); width: 48px; height: 48px; margin-bottom: 1rem; }
+
+        /* --- Toast (Notificações) --- */
+        .toast-container { z-index: 1100; }
+        .toast { width: 350px; max-width: 100%; }
+        .toast-header { justify-content: space-between; }
+
+        /* --- Indicador de Conexão --- */
+         #connectionStatus {
+             font-size: 0.8em;
+             padding: 0.2em 0.6em;
+             border-radius: 0.25rem;
+             transition: background-color 0.3s ease, color 0.3s ease;
+         }
+         #connectionStatus.status-connected { background-color: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); }
+         #connectionStatus.status-disconnected { background-color: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); }
+         #connectionStatus.status-connecting { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+
+
     </style>
 </head>
 <body>
-    <header class="p-3 border-bottom shadow-sm">
+    <header class="p-3 border-bottom shadow-sm header-area">
         <div class="d-flex align-items-center">
-             <h1 class="header-title me-auto"><span class="git-part">Git</span>Game <small class="text-body-secondary fs-6 fw-normal">(Co-op Turno Compacto)</small></h1>
+            <h1 class="header-title me-auto"><span class="git-part">Git</span>Game <small class="text-body-secondary fw-normal">(Multiplayer Cooperativo)</small></h1>
+            <div id="connectionStatus" class="status-connecting">Conectando...</div>
         </div>
     </header>
-  
-    <!-- Tela de Lobby -->
-    <main class="container-lg py-4" id="lobbyArea">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title">Criar ou Entrar em uma Sala</h2>
-                <form id="lobbyForm">
-                    <div class="mb-3">
-                        <label for="roomName" class="form-label">Nome da Sala</label>
-                        <input type="text" class="form-control" id="roomName" required>
+
+    <main class="container-lg py-4">
+
+        <!-- ========================== LOBBY ========================== -->
+        <div id="lobbySection" class="section-container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-md-10">
+                    <h2 class="mb-4 text-center">Lobby - Preparação</h2>
+                    <div class="row">
+                        <!-- Coluna Esquerda: Apelido e Prontidão -->
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="card bg-body-tertiary shadow-sm h-100">
+                                <div class="card-header fw-bold">Sua Identificação</div>
+                                <div class="card-body d-flex flex-column">
+                                    <label for="nicknameInput" class="form-label small">Seu Apelido:</label>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text"><i data-feather="user" style="width:1em; height:1em;"></i></span>
+                                        <input type="text" id="nicknameInput" class="form-control" placeholder="Seu apelido..." maxlength="20">
+                                        <button id="setNicknameButton" class="btn btn-outline-secondary waves-effect waves-light" type="button" title="Definir Apelido">
+                                            <i data-feather="check"></i>
+                                        </button>
+                                    </div>
+                                    <div class="d-grid mt-auto"> <!-- Botão no final -->
+                                        <button type="button" id="readyButton" class="btn btn-success btn-lg waves-effect waves-light">
+                                            <span id="readyButtonIcon"><i data-feather="play-circle"></i></span>
+                                            <span id="readyButtonText">Estou Pronto!</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coluna Direita: Jogadores e Status -->
+                        <div class="col-md-6">
+                            <div class="card bg-body-tertiary shadow-sm h-100">
+                                <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+                                    <span>Jogadores Conectados</span>
+                                    <span class="badge bg-secondary rounded-pill" id="playerCount">0</span>
+                                </div>
+                                <ul id="playerList" class="list-group list-group-flush" style="min-height: 150px; max-height: 300px; overflow-y: auto;">
+                                    <li class="list-group-item text-muted d-flex align-items-center justify-content-center h-100">
+                                        <span class="fst-italic">Aguardando jogadores...</span>
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-muted text-center" id="lobbyStatus">
+                                     Aguardando... (Mínimo de 2 jogadores prontos)
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="roomPassword" class="form-label">Senha da Sala (opcional)</label>
-                        <input type="password" class="form-control" id="roomPassword">
-                    </div>
-                    <div class="mb-3">
-                        <label for="playerName" class="form-label">Seu Nome</label>
-                        <input type="text" class="form-control" id="playerName" required>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="isHost">
-                        <label class="form-check-label" for="isHost">Criar Sala (Host)</label>
-                    </div>
-                    <div class="mb-3" id="hostOptions" style="display: none;">
-                        <label for="turnTime" class="form-label">Tempo por Turno (segundos)</label>
-                        <input type="number" class="form-control" id="turnTime" value="60" min="10" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Entrar</button>
-                </form>
+                     <!-- Botão de Reset Geral (para desengasgar) -->
+                     <div class="text-center mt-4">
+                          <button type="button" id="forceResetLobbyButton" class="btn btn-sm btn-outline-warning waves-effect waves-light">
+                              <i data-feather="alert-triangle"></i> Resetar Jogo (se travado)
+                          </button>
+                     </div>
+                </div>
             </div>
         </div>
+
+        <!-- ========================== JOGO EM ANDAMENTO ========================== -->
+        <div id="gameSection" class="section-container">
+            <!-- Card de Descrição do Nível -->
+            <div class="card bg-body-tertiary mb-4 shadow-sm">
+                <div class="card-body">
+                    <h2 class="level-card-title"><span class="text-accent" id="levelTitle">Nível ?</span></h2>
+                    <p id="levelDescription" class="card-subtitle mb-3 text-body-secondary"></p>
+                    <p class="mb-2"><strong class="text-accent">Comando:</strong> <span id="levelCommand"></span></p>
+                    <p id="levelExpected" class="mb-1 small text-muted"></p> <!-- Info de input/output esperado -->
+                </div>
+            </div>
+
+            <!-- Container do Editor -->
+            <div class="codemirror-container shadow-sm">
+                <textarea id="code" aria-label="Editor de Código Python Colaborativo" aria-describedby="levelDescription"># Carregando editor...</textarea>
+            </div>
+
+             <!-- Área de Status (Turno e Cronômetro) -->
+             <div id="gameStatusArea" class="d-flex align-items-center gap-3 shadow-sm mb-4">
+                 <span id="currentPlayerIndicator" class="flex-shrink-0" title="Jogador atual">--</span>
+                 <div class="progress flex-grow-1" role="progressbar" aria-label="Tempo restante do turno" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" id="turnTimerProgressContainer">
+                     <div class="progress-bar progress-bar-striped progress-bar-animated" id="turnTimerProgress" style="width: 100%"></div>
+                 </div>
+                 <span id="turnTimeDisplay" class="flex-shrink-0" title="Tempo restante">--:--</span>
+                 <button type="button" id="passTurnButton" class="btn btn-sm btn-outline-secondary waves-effect waves-light flex-shrink-0" title="Passar a Vez" disabled>
+                     <i data-feather="fast-forward"></i>
+                 </button>
+             </div>
+
+             <!-- Botões de Controle -->
+             <div class="d-flex justify-content-center gap-3 mb-4 btn-group-actions">
+                 <button type="button" id="resetLevelButton" class="btn btn-danger waves-effect waves-light" title="Resetar código e cronômetro do nível atual" disabled>
+                     <i data-feather="refresh-cw"></i> Resetar Nível
+                 </button>
+                 <button type="button" id="sendButton" class="btn btn-accent waves-effect waves-light" title="Enviar código final para validação" disabled>
+                     <i data-feather="send"></i> Enviar Solução
+                 </button>
+                  <button type="button" id="forceResetGameButton" class="btn btn-warning waves-effect waves-light" title="Forçar volta ao Lobby (progresso perdido)">
+                     <i data-feather="alert-triangle"></i> Voltar ao Lobby
+                 </button>
+             </div>
+
+            <!-- Área de Output -->
+            <div id="output" class="output-block" role="log" aria-live="polite">A saída do código e resultados aparecerão aqui...</div>
+        </div>
+
+         <!-- ========================== FIM DE JOGO ========================== -->
+         <div id="gameOverSection" class="section-container text-center">
+             <i data-feather="award" class="icon-success"></i>
+             <h2 class="text-success mb-3">Jogo Concluído!</h2>
+             <p id="gameOverMessage" class="lead mb-4">Parabéns a todos os jogadores!</p>
+             <button type="button" id="newGameButton" class="btn btn-primary btn-lg waves-effect waves-light">
+                  <i data-feather="play-circle"></i> Jogar Novamente
+             </button>
+         </div>
+
     </main>
-  
-    <!-- Interface do Jogo (inicialmente oculta) -->
-    <main class="container-lg py-4" id="gameArea" style="display:none;">
-        <!-- Card de Descrição do Nível -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title"><span id="levelTitle">Nível ?</span></h2>
-                <p id="levelDescription" class="text-body-secondary"></p>
-                <p id="levelCommand" class="fw-medium"></p>
-                <p id="levelExpected" class="fw-medium"></p>
-            </div>
-        </div>
-  
-        <!-- Editor -->
-        <div class="codemirror-container shadow-sm">
-             <textarea id="code" class="editor" aria-label="Editor de Código Python" aria-describedby="levelDescription">
-# Comece a codar aqui...
-             </textarea>
-        </div>
-  
-        <!-- Status de Turno -->
-        <div id="gameStatusArea" class="d-flex align-items-center gap-3 bg-body-tertiary p-2 rounded shadow-sm mb-4">
-            <span id="currentPlayerIndicator" class="fw-bold" title="Jogador atual">Carregando...</span>
-            <div class="progress flex-grow-1" role="progressbar" aria-label="Tempo restante do turno" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" id="turnTimerProgressContainer">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" id="turnTimerProgress" style="width: 100%"></div>
-            </div>
-            <span id="turnTimeDisplay" class="text-body-secondary" title="Tempo restante">--:--</span>
-            <button type="button" id="passTurnButton" class="btn btn-secondary btn-sm" title="Passar a Vez">
-                 <i data-feather="fast-forward"></i>
-                 <span class="visually-hidden">Passar a Vez</span>
-            </button>
-        </div>
-  
-        <!-- Botões de Controle -->
-        <div class="d-flex justify-content-between mb-4">
-            <button type="button" id="resetButton" class="btn btn-danger flex-fill" title="Resetar código e turno">
-                <i data-feather="trash-2" class="me-1"></i> Resetar
-            </button>
-            <button type="button" id="runButton" class="btn btn-success flex-fill" title="Executar o código (simulação)">
-                <i data-feather="play" class="me-1"></i> Run
-            </button>
-            <button type="button" id="sendButton" class="btn btn-accent flex-fill" title="Enviar código para validação">
-                <i data-feather="send" class="me-1"></i> Enviar
-            </button>
-        </div>
-  
-        <!-- Output -->
-        <div id="output" class="output-block" role="log" aria-live="polite">
-            A saída do seu código aparecerá aqui...
-        </div>
-    </main>
-  
-    <footer class="mt-auto p-3 text-center border-top text-body-secondary">
-        GitGame &copy; <span id="currentYear"></span>
+
+    <footer class="mt-auto p-3 text-center text-body-secondary border-top footer-area">
+        GitGame © <span id="currentYear"></span> - Desenvolvido com ☕ e <span class="text-danger"></span>
     </footer>
-  
+
+    <!-- Toast Container para Feedbacks -->
+     <div class="toast-container position-fixed bottom-0 end-0 p-3">
+         <div id="feedbackToast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+           <div class="d-flex">
+             <div class="toast-body" id="toastBody">
+               Mensagem aqui.
+             </div>
+             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+           </div>
+         </div>
+     </div>
+
+
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/node-waves/0.7.6/waves.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/edit/matchbrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/selection/active-line.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/node-waves/0.7.6/waves.min.js" integrity="sha512-MzHoZvVgXdAiTkBqtMOfY0AdSkd/N0IZu2h3btDYVFfdb+YIZc+UWjy8QGgvNYJNZZFv9wkvk07TrZCsw3WH5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js" integrity="sha512-bdAfk29Jtv7o/8L1x1r7hI6u1J3y7StF9x+jPHPLX96++kLJHt7NL7zB82G1K40SS/sPAzGj8QJcaV8/5A6F8w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js" integrity="sha512-/dTQEMwWj3FvS/ZtF/ZWv6gS/P305fBqdqejH6XW6qRkYe6qjP2bgt9K/Y9rEi7z/3L8O3f7b0X64McwO4DIxw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/edit/matchbrackets.min.js" integrity="sha512-21biqdD0vZUjcVPrLPwG+1j06x7Gsa/nFz7wBYtQ47lXqDqBTM615yv+q8GzIcm9j088Jg0P55mB/90rQWNFxQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/addon/selection/active-line.min.js" integrity="sha512-X1yJ0bUuC70d+9QpQ3X9G24aH1tq+lY/fvb/iB79+0/wP1K6LzXh3XXo+tK49O+/j25Y5uP558/GjA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="/socket.io/socket.io.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // --- Lobby e Configuração da Sala ---
-            const lobbyForm = document.getElementById("lobbyForm");
-            const roomNameInput = document.getElementById("roomName");
-            const roomPasswordInput = document.getElementById("roomPassword");
-            const playerNameInput = document.getElementById("playerName");
-            const isHostCheckbox = document.getElementById("isHost");
-            const hostOptionsDiv = document.getElementById("hostOptions");
-  
-            isHostCheckbox.addEventListener("change", function () {
-                hostOptionsDiv.style.display = this.checked ? "block" : "none";
-            });
-  
-            lobbyForm.addEventListener("submit", function (e) {
-                e.preventDefault();
-                const roomName = roomNameInput.value.trim();
-                const roomPassword = roomPasswordInput.value;
-                const playerName = playerNameInput.value.trim();
-                const isHost = isHostCheckbox.checked;
-                const turnTime = document.getElementById("turnTime").value;
-  
-                if (isHost) {
-                    // Cria a sala via API REST
-                    fetch("/createRoom", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ roomName, password: roomPassword, hostName: playerName, turnTime })
-                    }).then(response => response.json())
-                      .then(data => {
-                          if (data.message) {
-                              joinRoom(roomName, playerName);
-                          }
-                      }).catch(err => alert("Erro ao criar sala: " + err));
-                } else {
-                    joinRoom(roomName, playerName);
-                }
-            });
-  
-            // Conecta à sala via Socket.io e esconde o lobby
-            function joinRoom(roomName, playerName) {
-                socket.emit("joinRoomSocket", { roomName, playerName });
-                document.getElementById("lobbyArea").style.display = "none";
-                document.getElementById("gameArea").style.display = "block";
-            }
-  
-            // --- Inicialização do Editor CodeMirror ---
-            let editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-                mode: "python",
-                theme: "darcula",
-                lineNumbers: true,
-                indentUnit: 4,
-                tabSize: 4,
-                matchBrackets: true,
-                styleActiveLine: true,
-                autofocus: true,
-                readOnly: "nocursor"
-            });
-  
-            // Seletores da UI do jogo
-            const currentPlayerIndicator = document.getElementById("currentPlayerIndicator");
-            const turnTimerProgress = document.getElementById("turnTimerProgress");
-            const turnTimeDisplay = document.getElementById("turnTimeDisplay");
-            const passTurnButton = document.getElementById("passTurnButton");
-            const runButton = document.getElementById("runButton");
-            const resetButton = document.getElementById("resetButton");
-            const sendButton = document.getElementById("sendButton");
-            const outputDiv = document.getElementById("output");
-            const levelTitle = document.getElementById("levelTitle");
-            const levelDescription = document.getElementById("levelDescription");
-            const levelCommand = document.getElementById("levelCommand");
-            const levelExpected = document.getElementById("levelExpected");
+            // --- Seletores de UI (Atualizados) ---
+            const connectionStatus = document.getElementById('connectionStatus');
+            const lobbySection = document.getElementById('lobbySection');
+            const gameSection = document.getElementById('gameSection');
+            const gameOverSection = document.getElementById('gameOverSection');
+            const nicknameInput = document.getElementById('nicknameInput');
+            const setNicknameButton = document.getElementById('setNicknameButton');
+            const readyButton = document.getElementById('readyButton');
+            const readyButtonText = document.getElementById('readyButtonText');
+            const readyButtonIcon = document.getElementById('readyButtonIcon'); // Icone do botão pronto
+            const playerList = document.getElementById('playerList');
+            const playerCount = document.getElementById('playerCount');
+            const lobbyStatus = document.getElementById('lobbyStatus');
+            const levelTitle = document.getElementById('levelTitle');
+            const levelDescription = document.getElementById('levelDescription');
+            const levelCommand = document.getElementById('levelCommand');
+            const levelExpected = document.getElementById('levelExpected');
+            const currentPlayerIndicator = document.getElementById('currentPlayerIndicator');
+            const turnTimerProgress = document.getElementById('turnTimerProgress');
+            const turnTimeDisplay = document.getElementById('turnTimeDisplay');
+            const passTurnButton = document.getElementById('passTurnButton');
+            const resetLevelButton = document.getElementById('resetLevelButton');
+            const sendButton = document.getElementById('sendButton');
+            const outputDiv = document.getElementById('output');
+            const gameOverMessage = document.getElementById('gameOverMessage');
+            const newGameButton = document.getElementById('newGameButton');
+            const forceResetLobbyButton = document.getElementById('forceResetLobbyButton');
+            const forceResetGameButton = document.getElementById('forceResetGameButton');
             const yearSpan = document.getElementById("currentYear");
-  
+            const feedbackToastElement = document.getElementById('feedbackToast');
+            const feedbackToast = bootstrap.Toast.getOrCreateInstance(feedbackToastElement, { delay: 4000 }); // Aumentar tempo do toast
+            const toastBody = document.getElementById('toastBody');
+
+            // --- Variáveis de Estado do Cliente ---
             let myID = null;
+            let myNickname = "";
             let currentTurnID = null;
-            let turnTimeRemaining = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--turn-time-total'));
-  
-            const socket = io();
-  
-            // Recebe seu ID
-            socket.on("yourID", id => { myID = id; });
-  
-            // Atualiza o estado da sala
-            socket.on("stateUpdate", state => {
-                editor.setValue(state.currentCode);
-                levelTitle.textContent = "Nível " + state.currentLevel.id;
-                levelDescription.textContent = state.currentLevel.context;
-                levelCommand.innerHTML = "<strong>Comando:</strong> " + state.currentLevel.command;
-                if (state.currentLevel.inputs) {
-                    levelExpected.innerHTML = "<strong>Input:</strong> " + state.currentLevel.chosenInput.join(", ") +
-                        " | <strong>Saída esperada (" + state.currentLevel.expectedType + "):</strong> " + state.currentLevel.chosenExpectedOutput;
-                } else {
-                    levelExpected.innerHTML = "<strong>Saída esperada (" + state.currentLevel.expectedType + "):</strong> " + state.currentLevel.expectedValue;
-                }
-                outputDiv.textContent = "";
-            });
-  
-            // Atualiza o código colaborativo
-            socket.on("codeUpdate", newCode => {
-                const current = editor.getValue();
-                if (current !== newCode) {
-                    const cursor = editor.getCursor();
-                    editor.setValue(newCode);
-                    editor.setCursor(cursor);
-                }
-            });
-  
-            // Atualiza o cronômetro do turno (recebido do servidor)
-            socket.on("turnTimerUpdate", remaining => {
-                turnTimeRemaining = remaining;
-                turnTimeDisplay.textContent = new Date(remaining * 1000).toISOString().substr(14, 5);
-                let percentage = (remaining / parseInt(getComputedStyle(document.documentElement).getPropertyValue('--turn-time-total'))) * 100;
-                turnTimerProgress.style.width = percentage + "%";
-                turnTimerProgress.classList.remove("bg-success", "bg-warning", "bg-danger");
-                if (percentage > 50) turnTimerProgress.classList.add("bg-success");
-                else if (percentage > 20) turnTimerProgress.classList.add("bg-warning");
-                else turnTimerProgress.classList.add("bg-danger");
-            });
-  
-            // Atualiza o turno: o servidor envia o ID do jogador com a vez
-            socket.on("turnUpdate", turnID => {
-                currentTurnID = turnID;
-                if (myID === turnID) {
-                    currentPlayerIndicator.textContent = "Sua vez!";
-                    currentPlayerIndicator.classList.remove("text-warning");
-                    currentPlayerIndicator.classList.add("text-success");
-                    editor.setOption("readOnly", false);
-                    passTurnButton.disabled = false;
-                } else {
-                    currentPlayerIndicator.textContent = "Vez do Jogador: " + turnID;
-                    currentPlayerIndicator.classList.remove("text-success");
-                    currentPlayerIndicator.classList.add("text-warning");
-                    editor.setOption("readOnly", "nocursor");
-                    passTurnButton.disabled = true;
-                }
-            });
-  
-            // Envia atualizações do editor (apenas se for sua vez)
-            function debounce(func, delay) {
-                let timeout;
-                return function(...args) {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(this, args), delay);
-                };
+            let currentGameState = 'LOBBY'; // Estado inicial
+            let isMyTurn = false;
+            let isReady = false;
+            let editor = null;
+            let turnTimeTotal = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--turn-time-total')) || 60;
+            let currentPlayersMap = {}; // Para guardar apelidos rapidamente
+
+            // --- Inicialização do CodeMirror (lazy) ---
+            function initializeEditor() {
+                 if (editor || !document.getElementById("code")) return; // Já inicializado ou elemento não existe
+                 console.log("Inicializando CodeMirror...");
+                 try {
+                    editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+                        mode: "python",
+                        theme: "darcula",
+                        lineNumbers: true,
+                        indentUnit: 4,
+                        tabSize: 4,
+                        matchBrackets: true,
+                        styleActiveLine: true,
+                        readOnly: "nocursor",
+                        lineWrapping: true, // Quebra de linha automática
+                        gutters: ["CodeMirror-linenumbers"],
+                        extraKeys: {"Tab": "indentMore", "Shift-Tab": "indentLess"}
+                    });
+
+                     // Debounce para enviar atualizações
+                     editor.on("change", debounce(() => {
+                         if (isMyTurn && currentGameState === 'PLAYING' && editor) {
+                             socket.emit('codeUpdate', editor.getValue());
+                         }
+                     }, 400));
+
+                     // Forçar refresh após inicialização pode ajudar em alguns casos
+                     setTimeout(() => { if (editor) editor.refresh(); }, 100);
+
+                 } catch (error) {
+                     console.error("Erro ao inicializar CodeMirror:", error);
+                     outputDiv.textContent = "Erro ao carregar o editor de código.";
+                     outputDiv.className = "output-block error";
+                 }
             }
-  
-            editor.on("change", debounce(() => {
-                if (myID === currentTurnID) {
-                    socket.emit("codeUpdate", editor.getValue());
-                }
-            }, 300));
-  
-            // Botões de controle
-            passTurnButton.addEventListener("click", () => {
-                if (myID === currentTurnID) socket.emit("passTurn");
-            });
-  
-            resetButton.addEventListener("click", () => {
-                if (confirm("Resetar código e turno?")) {
-                    socket.emit("resetGame");
+
+            // --- Conexão Socket.IO ---
+            const socket = io();
+
+            socket.on('connect', () => {
+                connectionStatus.textContent = 'Conectado';
+                connectionStatus.className = 'status-connected';
+                console.log('Conectado ao servidor com ID:', socket.id);
+                if (myID) { // Se reconectando, informa o servidor (pode ser útil)
+                     socket.emit('reconnected', { id: myID, nickname: myNickname });
                 }
             });
-  
-            runButton.addEventListener("click", () => {
-                // Execução local simulada para visualização
-                outputDiv.textContent = "Saída simulada:\n" + editor.getValue();
-                outputDiv.className = "output-block";
+
+            socket.on('disconnect', (reason) => {
+                connectionStatus.textContent = 'Desconectado';
+                connectionStatus.className = 'status-disconnected';
+                showFeedback('error', 'Conexão Perdida', `Desconectado: ${reason}`);
+                updateUIForState('LOBBY'); // Volta pro lobby ao desconectar
+                isMyTurn = false;
+                currentTurnID = null;
+                currentPlayersMap = {};
+                resetLobbyUI();
             });
-  
-            sendButton.addEventListener("click", () => {
-                outputDiv.textContent = "Processando...";
-                socket.emit("submitCode");
+
+            socket.on('connect_error', (err) => {
+                 connectionStatus.textContent = 'Falha';
+                 connectionStatus.className = 'status-disconnected';
+                 console.error('Erro de conexão:', err);
+                 showFeedback('error', 'Falha na Conexão', 'Não foi possível conectar ao servidor.');
+             });
+
+            // Recebe informações iniciais do jogador
+            socket.on('yourInfo', (info) => {
+                if (!myID) { // Evita redefinir em reconexões acidentais
+                    myID = info.id;
+                    myNickname = info.nickname;
+                    nicknameInput.value = myNickname;
+                    console.log(`Minhas informações: ID=${myID}, Nickname=${myNickname}`);
+                }
             });
-  
-            socket.on("submissionResult", result => {
-                outputDiv.textContent = result.message;
-                outputDiv.className = "output-block " + (result.success ? "success" : "error");
+
+            // Atualização principal do estado do jogo
+            socket.on('gameStateUpdate', (state) => {
+                console.log("Recebido gameStateUpdate:", state);
+                currentGameState = state.gameState;
+
+                // Atualiza mapa de jogadores local para consulta rápida de nicks
+                currentPlayersMap = {};
+                state.players.forEach(p => { currentPlayersMap[p.id] = p.nickname; });
+
+                // Atualiza a lista visual de jogadores
+                updatePlayerList(state.players);
+
+                // Atualiza UI baseado no estado geral
+                updateUIForState(state.gameState);
+
+                 // Lógica específica para cada estado
+                 if (state.gameState === 'PLAYING' || state.gameState === 'LEVEL_COMPLETE') {
+                     initializeEditor(); // Garante que o editor existe
+                     if (state.currentLevel) {
+                         levelTitle.textContent = `Nível ${state.currentLevel.id}: ${state.currentLevel.context}`;
+                         levelDescription.textContent = state.currentLevel.context; // Pode remover se já estiver no título
+                         levelCommand.textContent = state.currentLevel.command;
+                         if (state.currentLevel.inputs) {
+                             levelExpected.innerHTML = `<strong>Input:</strong> <code>${state.chosenInput.join(", ")}</code> | <strong>Saída Esperada (${state.currentLevel.expectedType}):</strong> <code>${state.chosenExpectedOutput}</code>`;
+                         } else {
+                             levelExpected.innerHTML = `<strong>Saída Esperada (${state.currentLevel.expectedType}):</strong> <code>${state.currentLevel.expectedValue}</code>`;
+                         }
+                     }
+
+                     if (editor && editor.getValue() !== state.currentCode) {
+                         const cursor = editor.getCursor();
+                         editor.setValue(state.currentCode || "");
+                         editor.setCursor(cursor);
+                         // Se não for minha vez, coloco o cursor no início pra não atrapalhar
+                         if (!isMyTurn) editor.setCursor({line: 0, ch: 0});
+                     }
+
+                     // Atualiza indicador de turno e timer com dados do estado geral
+                     currentTurnID = state.playerOrder?.[state.currentTurnIndex] || null;
+                     isMyTurn = (myID === currentTurnID);
+                     updateTurnIndicator(currentTurnID);
+                     updateTurnTimer(state.turnTimerRemaining);
+
+                 } else if (state.gameState === 'LOBBY') {
+                     if(editor) editor.setValue("# Aguardando início do jogo...");
+                     resetLobbyUI(); // Garante que o botão de pronto esteja correto
+                 } else if (state.gameState === 'GAME_OVER') {
+                    // Mensagem será tratada em 'gameComplete'
+                 }
+                 // Atualiza estado dos controles DEPOIS de processar o estado
+                 updateEditorAndControls();
             });
-  
-            socket.on("gameComplete", message => {
-                alert(message);
-                editor.setValue("");
+
+            // Atualização específica do código vinda de outros jogadores
+            socket.on('codeUpdate', (newCode) => {
+                 if (editor && !isMyTurn && currentGameState === 'PLAYING' && editor.getValue() !== newCode) {
+                     const cursor = editor.getCursor();
+                     const scrollInfo = editor.getScrollInfo();
+                     editor.setValue(newCode);
+                     editor.setCursor(cursor); // Mantem cursor onde estava
+                     editor.scrollTo(scrollInfo.left, scrollInfo.top); // Mantem scroll
+                 }
             });
-  
-            // Atualiza o ano no rodapé
+
+            // Atualização específica do jogador da vez
+            socket.on('turnUpdate', (turnInfo) => {
+                 console.log("Turno atualizado:", turnInfo);
+                 currentTurnID = turnInfo.currentTurnID;
+                 isMyTurn = (myID === currentTurnID);
+                 updateTurnIndicator(currentTurnID);
+                 updateEditorAndControls();
+                  if (isMyTurn && editor) editor.focus(); // Foca no editor se for minha vez
+                 // O timer será atualizado pelo 'turnTimerUpdate'
+            });
+
+            // Atualização do cronômetro do turno
+            socket.on('turnTimerUpdate', (remaining) => {
+                 updateTurnTimer(remaining);
+            });
+
+             // Recebe resultado da submissão
+             socket.on('submissionResult', (result) => {
+                 outputDiv.textContent = result.message;
+                 outputDiv.className = "output-block " + (result.success ? "success" : "error");
+                 outputDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                 // Se sucesso, um feedback toast também é bom
+                 if (result.success) {
+                    showFeedback('success', `Nível ${result.levelId} Completo!`, `Score: ${result.score}`);
+                 }
+             });
+
+             // Jogo completado
+             socket.on('gameComplete', (message) => {
+                  gameOverMessage.textContent = message;
+                  updateUIForState('GAME_OVER');
+                  showFeedback('success', 'Jogo Finalizado!', message);
+             });
+
+              // Erros de ação
+             socket.on('actionError', (message) => {
+                  showFeedback('warning', 'Ação Inválida', message);
+              });
+
+             // Feedbacks gerais
+             socket.on('feedback', (feedback) => {
+                  showFeedback(feedback.type || 'info', feedback.title || 'Notificação', feedback.message);
+             });
+
+
+            // --- Funções Auxiliares de UI ---
+
+            function updateUIForState(newState) {
+                 // Esconde todas as seções primeiro
+                 lobbySection.classList.remove('active');
+                 gameSection.classList.remove('active');
+                 gameOverSection.classList.remove('active');
+
+                 // Mostra a seção correta
+                 if (newState === 'LOBBY') lobbySection.classList.add('active');
+                 else if (newState === 'PLAYING' || newState === 'LEVEL_COMPLETE') gameSection.classList.add('active');
+                 else if (newState === 'GAME_OVER') gameOverSection.classList.add('active');
+
+                 // Garante que ícones sejam renderizados após mostrar a seção
+                 setTimeout(() => feather.replace(), 50);
+            }
+
+            function updatePlayerList(playersData) {
+                 playerList.innerHTML = ''; // Limpa
+                 playerCount.textContent = playersData.length;
+                 if (playersData.length === 0) {
+                     playerList.innerHTML = '<li class="list-group-item text-muted fst-italic d-flex justify-content-center align-items-center" style="min-height: 100px;">Aguardando jogadores...</li>';
+                 } else {
+                     playersData.forEach(player => {
+                         const li = document.createElement('li');
+                         li.className = 'list-group-item';
+
+                         const nickSpan = document.createElement('span');
+                         nickSpan.className = 'player-nickname';
+                         nickSpan.textContent = player.nickname;
+
+                         const badgesSpan = document.createElement('span');
+
+                         if (player.id === myID) {
+                              const youBadge = document.createElement('span');
+                              youBadge.className = 'badge bg-info-subtle text-info-emphasis rounded-pill ms-2';
+                              youBadge.textContent = 'Você';
+                              badgesSpan.appendChild(youBadge);
+                              // Atualiza estado do botão 'Pronto' local
+                              isReady = player.isReady;
+                              updateReadyButtonState();
+                         }
+
+                         if (currentGameState === 'LOBBY') {
+                              const readyBadge = document.createElement('span');
+                              readyBadge.className = `badge rounded-pill ms-2 ${player.isReady ? 'bg-success-subtle text-success-emphasis' : 'bg-warning-subtle text-warning-emphasis'}`;
+                              readyBadge.innerHTML = `<i data-feather="${player.isReady ? 'check' : 'clock'}" style="width:0.8em;height:0.8em;vertical-align:-0.1em;"></i> ${player.isReady ? 'Pronto' : 'Aguardando'}`;
+                              badgesSpan.appendChild(readyBadge);
+                         } else if (currentGameState === 'PLAYING' || currentGameState === 'LEVEL_COMPLETE') {
+                             if (player.id === currentTurnID) {
+                                  const turnBadge = document.createElement('span');
+                                  turnBadge.className = 'badge bg-primary-subtle text-primary-emphasis rounded-pill ms-2';
+                                  turnBadge.innerHTML = '<i data-feather="edit-2" style="width:0.8em;height:0.8em;vertical-align:-0.1em;"></i> Na Vez';
+                                  badgesSpan.appendChild(turnBadge);
+                             }
+                         }
+                         li.appendChild(nickSpan);
+                         li.appendChild(badgesSpan);
+                         playerList.appendChild(li);
+                     });
+                      // Renderiza ícones dentro dos badges
+                     feather.replace();
+                 }
+                 // Atualiza status do lobby
+                 if (currentGameState === 'LOBBY') {
+                     updateLobbyStatus(playersData);
+                 }
+            }
+
+             function updateLobbyStatus(playersData = []) {
+                  const readyCount = playersData.filter(p => p.isReady).length;
+                  const totalCount = playersData.length;
+                  const minPlayers = 2; // Idealmente vindo do servidor
+
+                  if (totalCount < minPlayers) {
+                      lobbyStatus.textContent = `Aguardando... (${totalCount}/${minPlayers} jogadores)`;
+                      lobbyStatus.className = 'card-footer text-muted text-center';
+                  } else if (readyCount < totalCount) {
+                      lobbyStatus.textContent = `Esperando... (${readyCount}/${totalCount} prontos)`;
+                      lobbyStatus.className = 'card-footer text-warning text-center';
+                  } else {
+                      lobbyStatus.textContent = `Todos prontos! Iniciando...`;
+                       lobbyStatus.className = 'card-footer text-success text-center';
+                  }
+             }
+
+            function updateTurnIndicator(turnID) {
+                const nickname = currentPlayersMap[turnID] || 'Jogador';
+
+                if (turnID === myID) {
+                    currentPlayerIndicator.textContent = "Sua Vez!";
+                    currentPlayerIndicator.className = 'flex-shrink-0 text-success'; // Usa classe Bootstrap
+                    currentPlayerIndicator.title = `É a sua vez (${nickname})`;
+                } else if (turnID) {
+                    // Limita o tamanho do nickname exibido
+                    const displayNick = nickname.length > 15 ? nickname.substring(0, 12) + '...' : nickname;
+                    currentPlayerIndicator.textContent = `Vez de: ${displayNick}`;
+                    currentPlayerIndicator.className = 'flex-shrink-0 text-warning'; // Usa classe Bootstrap
+                    currentPlayerIndicator.title = `Aguardando ${nickname} (ID: ${turnID})`;
+                } else {
+                    currentPlayerIndicator.textContent = "-- Aguarde --";
+                    currentPlayerIndicator.className = 'flex-shrink-0 text-muted';
+                    currentPlayerIndicator.title = "Aguardando início do turno";
+                }
+            }
+
+            function updateTurnTimer(remaining) {
+                 if (remaining === null || remaining === undefined) remaining = turnTimeTotal;
+                 turnTimeDisplay.textContent = new Date(remaining * 1000).toISOString().substr(14, 5);
+                 let percentage = Math.max(0, (remaining / turnTimeTotal) * 100);
+                 turnTimerProgress.style.width = percentage + "%";
+
+                 // Remove classes antigas e adiciona a correta
+                 turnTimerProgress.classList.remove("bg-success", "bg-warning", "bg-danger");
+                 if (percentage > 50) turnTimerProgress.classList.add("bg-success");
+                 else if (percentage > 20) turnTimerProgress.classList.add("bg-warning");
+                 else turnTimerProgress.classList.add("bg-danger");
+            }
+
+             function updateEditorAndControls() {
+                 const isLobby = currentGameState === 'LOBBY';
+                 const isPlaying = currentGameState === 'PLAYING';
+                 const canEdit = isPlaying && isMyTurn;
+                 const canSubmit = isPlaying; // Permitir submissão por qualquer um durante o jogo
+                 const canResetLevel = isPlaying;
+                 const canPassTurn = isPlaying && isMyTurn;
+
+                 // Editor
+                 if (editor) {
+                      editor.setOption("readOnly", !canEdit ? "nocursor" : false);
+                       editor.display.wrapper.style.opacity = isPlaying ? "1" : "0.6"; // Atenua editor fora do jogo
+                 }
+
+                 // Botões do Jogo
+                 passTurnButton.disabled = !canPassTurn;
+                 resetLevelButton.disabled = !canResetLevel;
+                 sendButton.disabled = !canSubmit;
+                 forceResetGameButton.style.display = (isPlaying || currentGameState === 'LEVEL_COMPLETE') ? 'inline-block' : 'none'; // Mostrar só no jogo
+
+                 // Controles do Lobby
+                 nicknameInput.disabled = !isLobby;
+                 setNicknameButton.disabled = !isLobby;
+                 readyButton.disabled = !isLobby;
+                 forceResetLobbyButton.style.display = isLobby ? 'inline-block' : 'none'; // Mostrar só no lobby
+
+                 // Atualiza estado visual do botão de Pronto
+                 if (isLobby) updateReadyButtonState();
+            }
+
+             function resetLobbyUI() {
+                 isReady = false;
+                 updateReadyButtonState();
+                 lobbyStatus.textContent = 'Aguardando...';
+                 lobbyStatus.className = 'card-footer text-muted text-center';
+             }
+
+             function updateReadyButtonState() {
+                  readyButtonText.textContent = isReady ? "Estou Pronto" : "Marcar como Pronto";
+                  readyButtonIcon.innerHTML = isReady ? '<i data-feather="check-circle"></i>' : '<i data-feather="play-circle"></i>';
+                  readyButton.classList.toggle("btn-success", !isReady); // Verde para marcar
+                  readyButton.classList.toggle("btn-warning", isReady); // Amarelo quando pronto (para desmarcar)
+                  feather.replace(); // Re-renderiza ícones
+             }
+
+
+            // Função debounce
+            function debounce(func, delay) { /* ... (código debounce inalterado) ... */
+                 let timeout;
+                 return function(...args) {
+                     clearTimeout(timeout);
+                     timeout = setTimeout(() => func.apply(this, args), delay);
+                 };
+             }
+
+            // Função para mostrar toasts de feedback
+             function showFeedback(type = 'info', title = 'Notificação', message) {
+                 // Remove classes antigas
+                 feedbackToastElement.classList.remove('text-bg-success', 'text-bg-danger', 'text-bg-warning', 'text-bg-info', 'text-bg-primary');
+                 let icon = 'info';
+                 let bgClass = 'text-bg-info'; // Padrão info
+
+                 switch (type) {
+                     case 'success': bgClass = 'text-bg-success'; icon = 'check-circle'; break;
+                     case 'error': bgClass = 'text-bg-danger'; icon = 'x-octagon'; break;
+                     case 'warning': bgClass = 'text-bg-warning'; icon = 'alert-triangle'; break;
+                     case 'info': // Já é o padrão
+                     default: bgClass = 'text-bg-primary'; icon = 'info'; break; // Usar primary para info geral
+                 }
+                 feedbackToastElement.classList.add(bgClass);
+                 // Adiciona ícone e mensagem
+                 toastBody.innerHTML = `<i data-feather="${icon}" class="me-2" style="vertical-align: -0.125em;"></i> <strong>${title}:</strong> ${message}`;
+                 feather.replace(); // Renderiza o ícone
+                 feedbackToast.show();
+            }
+
+
+            // --- Event Listeners de UI ---
+            setNicknameButton.addEventListener("click", () => { /* ... (lógica inalterada) ... */
+                const newNick = nicknameInput.value.trim();
+                if (newNick && newNick !== myNickname && currentGameState === 'LOBBY') {
+                    socket.emit('setNickname', newNick);
+                     myNickname = newNick; // Atualiza localmente também
+                     showFeedback('info','Apelido Definido', `Seu apelido agora é: ${newNick}`);
+                } else if (!newNick) {
+                     showFeedback('warning', 'Apelido Inválido', 'Por favor, insira um apelido.');
+                }
+            });
+
+            readyButton.addEventListener("click", () => { /* ... (lógica inalterada, UI controlada por updateReadyButtonState) ... */
+                if (currentGameState === 'LOBBY') {
+                    socket.emit('toggleReady');
+                    // O estado visual será atualizado via gameStateUpdate -> updatePlayerList
+                }
+            });
+
+            passTurnButton.addEventListener("click", () => { /* ... (lógica inalterada) ... */
+                if (isMyTurn && currentGameState === 'PLAYING') {
+                    socket.emit('passTurn');
+                }
+            });
+
+            resetLevelButton.addEventListener("click", () => { /* ... (lógica inalterada) ... */
+                if (currentGameState === 'PLAYING' && confirm("Resetar o código e o tempo deste nível para todos?")) {
+                    socket.emit('resetLevel');
+                     outputDiv.textContent = "Nível sendo resetado...";
+                     outputDiv.className = "output-block info";
+                }
+            });
+
+             forceResetLobbyButton.addEventListener("click", () => { /* ... (lógica inalterada) ... */
+                 if (confirm("Forçar retorno ao Lobby? Use se o jogo parecer travado.")) {
+                     socket.emit('forceResetToLobby');
+                 }
+             });
+             forceResetGameButton.addEventListener("click", () => { /* ... (lógica inalterada) ... */
+                 if (confirm("Forçar retorno ao Lobby? Progresso do nível atual será perdido.")) {
+                      socket.emit('forceResetToLobby');
+                 }
+              });
+
+            sendButton.addEventListener("click", () => { /* ... (lógica inalterada) ... */
+                if (currentGameState === 'PLAYING' && editor) {
+                    outputDiv.textContent = "Enviando e validando o código...";
+                    outputDiv.className = "output-block info";
+                    socket.emit('submitCode');
+                }
+            });
+
+             newGameButton.addEventListener("click", () => { /* ... (lógica inalterada) ... */
+                 socket.emit('forceResetToLobby');
+                 updateUIForState('LOBBY');
+             });
+
+
+            // --- Inicialização Final ---
             yearSpan.textContent = new Date().getFullYear();
-  
-            // Inicializa Feather e Waves
-            try { feather.replace(); } catch (e) { console.error(e); }
-            try { Waves.init(); Waves.attach(".btn", ["waves-light"]); } catch (e) { console.error(e); }
+             Waves.init(); // Inicializa WavesJS
+             Waves.attach(".btn", ["waves-light"]); // Aplica a todos os botões
+
+             // Define o estado inicial da UI como Lobby e renderiza ícones
+             updateUIForState('LOBBY');
+
+            // Foco inicial no campo de apelido no Lobby
+            if(nicknameInput) nicknameInput.focus();
+
+            console.log("Interface GitGame Multiplayer inicializada.");
+
         });
     </script>
+
 </body>
 </html>
